@@ -49,7 +49,7 @@ Reader mode is a firmware preset. It uses its own internal color processing and 
 
 ## Download and usage
 
-1. Download `LGMonitorControl.exe` and `install-lg-monitor-schedule.ps1` from the latest release, keeping both files in the same folder.
+1. Build `LGMonitorControl.exe` from source or download it from a future release, then keep it beside `install-lg-monitor-schedule.ps1` and the `assets` folder.
 2. Run `LGMonitorControl.exe`.
 3. Configure up to four profiles.
 4. Check **Active** for every profile that should participate in automatic switching.

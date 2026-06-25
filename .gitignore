@@ -19,9 +19,10 @@ monitor-ddc-scan.ps1
 lg-monitor-control.ps1
 
 # Build/debug noise
+LGMonitorControl.exe
+*.exe
 *.pdb
 *.log
 *.user
 bin/
 obj/
-

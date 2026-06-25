@@ -377,7 +377,8 @@ namespace LGMonitorControl {
             TabPage color = new TabPage("Cor");
             TabPage lab = new TabPage("Laboratório");
             TabPage settings = new TabPage("Configurações");
-            tabs.TabPages.Add(profiles); tabs.TabPages.Add(basic); tabs.TabPages.Add(color); tabs.TabPages.Add(lab); tabs.TabPages.Add(settings);
+            TabPage donate = new TabPage("Donate");
+            tabs.TabPages.Add(profiles); tabs.TabPages.Add(basic); tabs.TabPages.Add(color); tabs.TabPages.Add(lab); tabs.TabPages.Add(settings); tabs.TabPages.Add(donate);
             Controls.Add(tabs);
 
             BuildProfiles4(profiles);
@@ -385,6 +386,7 @@ namespace LGMonitorControl {
             BuildColor(color);
             BuildLab(lab);
             BuildSettings(settings);
+            BuildDonate(donate);
 
             status.Text = "Pronto. O monitor aceita escrita, mas não informa o valor atual.";
             status.AutoEllipsis = true;
@@ -393,6 +395,9 @@ namespace LGMonitorControl {
             status.Size = new Size(635, 24);
             status.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             Controls.Add(status);
+            LinkLabel author = new LinkLabel { Text = "Desenvolvido por pbzin", AutoSize = true, Location = new Point(510, 640), Anchor = AnchorStyles.Bottom | AnchorStyles.Right, LinkColor = accent };
+            author.LinkClicked += delegate { OpenUrl("https://github.com/pbzin"); };
+            Controls.Add(author); author.BringToFront();
             SetTheme(ProfileStore.CurrentIndex() >= 2);
             InitializeTray();
             FormClosing += OnFormClosing;
@@ -777,6 +782,47 @@ namespace LGMonitorControl {
             Button exit = ButtonOf("Sair do aplicativo", 446, 240); exit.Size = new Size(165, 38); exit.BackColor = Color.FromArgb(190, 0, 55); exit.ForeColor = Color.White;
             exit.Click += delegate { ExitApplication(); };
             page.Controls.Add(startup); page.Controls.Add(pause); page.Controls.Add(hide); page.Controls.Add(exit);
+        }
+
+        void BuildDonate(Control page) {
+            ScrollableControl scrollable = page as ScrollableControl;
+            if (scrollable != null) scrollable.AutoScroll = true;
+            page.Controls.Add(new Label { Text = "💖 Support My Work", Font = new Font("Segoe UI Semibold", 18F), AutoSize = true, Location = new Point(185, 18) });
+
+            Button coffee = ButtonOf("Buy Me a Coffee", 75, 65); coffee.Size = new Size(210, 38);
+            Button sponsor = ButtonOf("GitHub Sponsors", 315, 65); sponsor.Size = new Size(210, 38);
+            coffee.BackColor = Color.FromArgb(255, 221, 0);
+            sponsor.BackColor = Color.FromArgb(234, 74, 170); sponsor.ForeColor = Color.White;
+            coffee.Click += delegate { OpenUrl("https://buymeacoffee.com/pbzin"); };
+            sponsor.Click += delegate { OpenUrl("https://github.com/sponsors/pbzin"); };
+            page.Controls.Add(coffee); page.Controls.Add(sponsor);
+
+            AddDonationBlock(page, "Pix ⚡", "5198a8b3-6b89-4475-aec1-5adcfcfd12cf", null, 125);
+            AddDonationBlock(page, "Bitcoin", "1GkpDZDHYov7WZLs54Nv19f2KUoZPcACs2", "bitcoin-qr.png", 205);
+            AddDonationBlock(page, "Monero", "45YtYmxUeXeFdokKPG1KWtMFLByS8nwmtiJjEiZ9LfbkNaSUCvyWWAx3VmtDKKkxPJFdQLSXxodRWMt7EBu5TmA3Qi9dgwT", "monero-qr.png", 390);
+        }
+
+        void AddDonationBlock(Control page, string title, string address, string imageName, int y) {
+            Label heading = new Label { Text = title, Font = new Font("Segoe UI Semibold", 12F), AutoSize = true, Location = new Point(24, y) };
+            TextBox value = new TextBox { Text = address, ReadOnly = true, Location = new Point(24, y + 30), Width = imageName == null ? 540 : 370 };
+            Button copy = ButtonOf("Copiar", imageName == null ? 475 : 405, y + 27); copy.Size = new Size(90, 29);
+            copy.Click += delegate { try { Clipboard.SetText(address); status.Text = title + " copiado."; } catch { } };
+            page.Controls.Add(heading); page.Controls.Add(value); page.Controls.Add(copy);
+            if (imageName != null) {
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", imageName);
+                PictureBox qr = new PictureBox { Location = new Point(430, y - 5), Size = new Size(135, 135), SizeMode = PictureBoxSizeMode.Zoom, BorderStyle = BorderStyle.FixedSingle };
+                if (File.Exists(path)) {
+                    using (Image source = Image.FromFile(path)) qr.Image = new Bitmap(source);
+                } else {
+                    qr.BackColor = Color.WhiteSmoke;
+                }
+                page.Controls.Add(qr);
+            }
+        }
+
+        void OpenUrl(string url) {
+            try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); }
+            catch (Exception ex) { status.Text = "Não foi possível abrir o link: " + ex.Message; }
         }
 
         void BuildLab(Control page) {
