@@ -5,6 +5,16 @@
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/LG-20MK400H-A50034?style=for-the-badge&logo=lg&logoColor=white" height="42" alt="LG 20MK400H Control">
+</p>
+
+[![Repo Views](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fpbzin%2F20MK400H-LG-Control&label=repo%20views&countColor=%230e75b6&style=flat)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fpbzin%2F20MK400H-LG-Control)
+
+![Downloads](https://img.shields.io/github/downloads/pbzin/20MK400H-LG-Control/total?style=flat&color=0e75b6&label=downloads)
+
+[![Download](https://img.shields.io/badge/Download-LG%2020MK400H%20Control-A50034?style=for-the-badge&logo=github)](https://github.com/pbzin/20MK400H-LG-Control/releases)
+
+<p align="center">
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=flat-square&logo=windows" alt="Windows 10 and 11">
   <img src="https://img.shields.io/badge/.NET-Framework%204-512BD4?style=flat-square&logo=dotnet" alt=".NET Framework 4">
   <img src="https://img.shields.io/badge/Monitor-LG%2020MK400H-A50034?style=flat-square&logo=lg" alt="LG 20MK400H">
@@ -130,7 +140,7 @@ Bug reports and tested command mappings are welcome. When reporting an issue, in
   </a>
   <br><br>
   <img src="https://img.shields.io/badge/Pix-⚡-32BCAD?style=for-the-badge&logo=pix&logoColor=white" alt="Pix" height="30" align="absmiddle">
-  <img src="assets/brasil-badge.png" alt="Brasil" height="30" align="absmiddle">
+  <img src="https://raw.githubusercontent.com/pbzin/pbzin/main/assets/brasil-badge.png" alt="Brasil" height="30" align="absmiddle">
   <br>
   <code>5198a8b3-6b89-4475-aec1-5adcfcfd12cf</code>
   <br><br>
