@@ -16,6 +16,30 @@ namespace LGMonitorControl {
         public static string T(string english, string portuguese) { return IsPtBr ? portuguese : english; }
     }
 
+    sealed class ProfileMouseWheelGuard : IMessageFilter {
+        const int WM_MOUSEWHEEL = 0x020A;
+
+        public bool PreFilterMessage(ref Message message) {
+            if (message.Msg != WM_MOUSEWHEEL) return false;
+            Control control = Control.FromHandle(message.HWnd);
+            if (!(control is ComboBox) && !(control is NumericUpDown) && !(control is DateTimePicker)) return false;
+
+            Control parent = control.Parent;
+            while (parent != null) {
+                ScrollableControl scroll = parent as ScrollableControl;
+                if (scroll != null && scroll.AutoScroll && scroll.VerticalScroll.Visible) {
+                    int delta = (short)((long)message.WParam >> 16);
+                    int maximum = Math.Max(scroll.VerticalScroll.Minimum, scroll.VerticalScroll.Maximum - scroll.VerticalScroll.LargeChange + 1);
+                    int target = scroll.VerticalScroll.Value - Math.Sign(delta) * 45;
+                    scroll.AutoScrollPosition = new Point(0, Math.Max(scroll.VerticalScroll.Minimum, Math.Min(maximum, target)));
+                    return true;
+                }
+                parent = parent.Parent;
+            }
+            return true;
+        }
+    }
+
     sealed class Profile {
         public string Name;
         public int Mode, Brightness, Contrast, Sharpness, Gamma, Temperature, Red, Green, Blue;
@@ -455,13 +479,15 @@ namespace LGMonitorControl {
         void InitializeTray() {
             ContextMenuStrip menu = new ContextMenuStrip();
             ToolStripMenuItem open = new ToolStripMenuItem(L.T("Open LG Monitor Control", "Abrir LG Monitor Control"));
+            ToolStripMenuItem reset = new ToolStripMenuItem(L.T("Restore scheduled profile now", "Restaurar perfil do horário atual"));
             ToolStripMenuItem exit = new ToolStripMenuItem(L.T("Exit application", "Sair do aplicativo"));
             pauseFilterItem = new ToolStripMenuItem();
             UpdatePauseMenuText();
             open.Click += delegate { RestoreFromTray(); };
+            reset.Click += delegate { RestoreScheduledProfile(); };
             pauseFilterItem.Click += delegate { ToggleFilterPause(); };
             exit.Click += delegate { ExitApplication(); };
-            menu.Items.Add(open); menu.Items.Add(pauseFilterItem); menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(open); menu.Items.Add(reset); menu.Items.Add(pauseFilterItem); menu.Items.Add(new ToolStripSeparator());
             for (int i = 0; i < ProfileStore.Profiles.Length; i++) {
                 int idx = i;
                 ToolStripMenuItem item = new ToolStripMenuItem(L.T("Apply profile ", "Aplicar perfil ") + ProfileStore.Profiles[i].Name);
@@ -493,6 +519,24 @@ namespace LGMonitorControl {
                 status.Text = L.T("Night filter resumed for the current profile.", "Filtro noturno retomado conforme o perfil atual.");
             }
             UpdatePauseMenuText();
+        }
+
+        void RestoreScheduledProfile() {
+            try {
+                ProfileStore.FilterPaused = false;
+                ProfileStore.Save();
+                int index = ProfileStore.CurrentIndex();
+                ProfileStore.Apply(ProfileStore.Profiles[index]);
+                SetTheme(index >= 2);
+                UpdatePauseMenuText();
+                status.ForeColor = Color.FromArgb(25, 115, 55);
+                status.Text = L.T("Scheduled profile restored: ", "Perfil do horário restaurado: ") + ProfileStore.Profiles[index].Name;
+                trayIcon.ShowBalloonTip(1800, "LG Monitor Control", status.Text, ToolTipIcon.Info);
+            } catch (Exception ex) {
+                status.ForeColor = accent;
+                status.Text = L.T("Could not restore the profile: ", "Não foi possível restaurar o perfil: ") + ex.Message;
+                trayIcon.ShowBalloonTip(2200, "LG Monitor Control", status.Text, ToolTipIcon.Error);
+            }
         }
 
         void OnFormClosing(object sender, FormClosingEventArgs e) {
@@ -977,6 +1021,7 @@ namespace LGMonitorControl {
             if (startup) ProfileStore.Apply(ProfileStore.Current());
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            Application.AddMessageFilter(new ProfileMouseWheelGuard());
             Application.Run(new MainForm(startup));
         }
     }
