@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using Microsoft.Win32;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -798,11 +799,15 @@ namespace LGMonitorControl {
             page.Controls.Add(coffee); page.Controls.Add(sponsor);
 
             AddDonationBlock(page, "Pix ⚡", "5198a8b3-6b89-4475-aec1-5adcfcfd12cf", null, 125);
-            AddDonationBlock(page, "Bitcoin", "1GkpDZDHYov7WZLs54Nv19f2KUoZPcACs2", "bitcoin-qr.png", 205);
-            AddDonationBlock(page, "Monero", "45YtYmxUeXeFdokKPG1KWtMFLByS8nwmtiJjEiZ9LfbkNaSUCvyWWAx3VmtDKKkxPJFdQLSXxodRWMt7EBu5TmA3Qi9dgwT", "monero-qr.png", 390);
+            AddDonationBlock(page, "Bitcoin", "1GkpDZDHYov7WZLs54Nv19f2KUoZPcACs2", "bitcoin-qr.png", "https://raw.githubusercontent.com/pbzin/pbzin/main/assets/bitcoin-qr.png", 205);
+            AddDonationBlock(page, "Monero", "45YtYmxUeXeFdokKPG1KWtMFLByS8nwmtiJjEiZ9LfbkNaSUCvyWWAx3VmtDKKkxPJFdQLSXxodRWMt7EBu5TmA3Qi9dgwT", "monero-qr.png", "https://raw.githubusercontent.com/pbzin/pbzin/main/assets/monero-qr.png", 390);
         }
 
         void AddDonationBlock(Control page, string title, string address, string imageName, int y) {
+            AddDonationBlock(page, title, address, imageName, null, y);
+        }
+
+        void AddDonationBlock(Control page, string title, string address, string imageName, string imageUrl, int y) {
             Label heading = new Label { Text = title, Font = new Font("Segoe UI Semibold", 12F), AutoSize = true, Location = new Point(24, y) };
             TextBox value = new TextBox { Text = address, ReadOnly = true, Location = new Point(24, y + 30), Width = imageName == null ? 540 : 370 };
             Button copy = ButtonOf("Copiar", imageName == null ? 475 : 405, y + 27); copy.Size = new Size(90, 29);
@@ -810,6 +815,12 @@ namespace LGMonitorControl {
             page.Controls.Add(heading); page.Controls.Add(value); page.Controls.Add(copy);
             if (imageName != null) {
                 string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", imageName);
+                if (!File.Exists(path) && !string.IsNullOrEmpty(imageUrl)) {
+                    try {
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        using (WebClient client = new WebClient()) client.DownloadFile(imageUrl, path);
+                    } catch { }
+                }
                 PictureBox qr = new PictureBox { Location = new Point(430, y - 5), Size = new Size(135, 135), SizeMode = PictureBoxSizeMode.Zoom, BorderStyle = BorderStyle.FixedSingle };
                 if (File.Exists(path)) {
                     using (Image source = Image.FromFile(path)) qr.Image = new Bitmap(source);

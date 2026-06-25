@@ -138,11 +138,11 @@ Bug reports and tested command mappings are welcome. When reporting an issue, in
   <br>
   <code>1GkpDZDHYov7WZLs54Nv19f2KUoZPcACs2</code>
   <br>
-  <img src="assets/bitcoin-qr.png" width="150" alt="Bitcoin donation QR code">
+  <img src="https://raw.githubusercontent.com/pbzin/pbzin/main/assets/bitcoin-qr.png" width="150" alt="Bitcoin donation QR code">
   <br><br>
   <img src="https://img.shields.io/badge/Monero-FF6600?style=for-the-badge&logo=monero&logoColor=white" alt="Monero" height="30" align="absmiddle">
   <br>
   <code>45YtYmxUeXeFdokKPG1KWtMFLByS8nwmtiJjEiZ9LfbkNaSUCvyWWAx3VmtDKKkxPJFdQLSXxodRWMt7EBu5TmA3Qi9dgwT</code>
   <br>
-  <img src="assets/monero-qr.png" width="150" alt="Monero donation QR code">
+  <img src="https://raw.githubusercontent.com/pbzin/pbzin/main/assets/monero-qr.png" width="150" alt="Monero donation QR code">
 </p>
