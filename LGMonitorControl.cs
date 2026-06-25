@@ -199,8 +199,14 @@ namespace LGMonitorControl {
             // Temperatura e ganhos RGB fazem alguns LG retornarem automaticamente
             // ao modo Personalizado. O modo deve ser sempre o último comando.
             if (!custom) {
-                Thread.Sleep(120); MonitorApi.Set(0x15, (uint)p.Mode);
-                Thread.Sleep(180); MonitorApi.Set(0x10, (uint)p.Brightness);
+                // Reenviar o preset atual não provoca uma transição no scaler.
+                // Nesse estado, especialmente em Leitura, o brilho seguinte pode
+                // ser ignorado. Passar brevemente por Personalizado garante que
+                // o firmware reaplique de fato o preset solicitado.
+                Thread.Sleep(120); MonitorApi.Set(0x15, 11);
+                Thread.Sleep(350); MonitorApi.Set(0x15, (uint)p.Mode);
+                Thread.Sleep(900); MonitorApi.Set(0x10, (uint)p.Brightness);
+                Thread.Sleep(250); MonitorApi.Set(0x10, (uint)p.Brightness);
             }
             int profileIndex = Array.IndexOf(Profiles, p);
             NightFilter.Apply(!FilterPaused && profileIndex >= 0 && NightFilterEnabled[profileIndex], profileIndex >= 0 ? NightFilterKelvin[profileIndex] : 6500);
