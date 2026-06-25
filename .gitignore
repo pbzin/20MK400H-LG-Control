@@ -1,0 +1,27 @@
+# Local configuration
+profiles.ini
+
+# Reverse-engineering and diagnostic artifacts
+.agents/
+tools/
+osc-decompiled/
+lgcommon-decompiled/
+oscservice-decompiled/
+dnSpy-netframework.zip
+dnlib.dll
+Iced.dll
+OnScreenControl-analysis.exe
+LGDdcSdkProbe.*
+NativeStringXref.*
+OscStringBridge.*
+monitor-ddc-result.txt
+monitor-ddc-scan.ps1
+lg-monitor-control.ps1
+
+# Build/debug noise
+*.pdb
+*.log
+*.user
+bin/
+obj/
+
