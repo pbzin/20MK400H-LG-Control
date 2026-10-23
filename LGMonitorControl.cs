@@ -727,8 +727,10 @@ namespace LGMonitorControl {
         }
 
         void BuildProfiles(Control page) {
-            GroupBox day = new GroupBox { Text = "☀ Perfil Dia — tema claro", Location = new Point(14, 12), Size = new Size(600, 190), BackColor = Color.White };
-            GroupBox night = new GroupBox { Text = "● Perfil Noite — tema escuro", Location = new Point(14, 210), Size = new Size(600, 190), BackColor = Color.FromArgb(42, 43, 48), ForeColor = Color.White };
+            Panel day = new Panel { Location = new Point(14, 12), Size = new Size(600, 190), BackColor = Color.FromArgb(40, 40, 40), Padding = new Padding(16) };
+            Panel night = new Panel { Location = new Point(14, 210), Size = new Size(600, 190), BackColor = Color.FromArgb(40, 40, 40), ForeColor = Color.White, Padding = new Padding(16) };
+            day.Controls.Add(new Label { Text = "☀ Perfil Dia — tema claro", AutoSize = true, ForeColor = Color.White, Font = new Font("Segoe UI", 10.5f, FontStyle.Bold), Location = new Point(10, 5) });
+            night.Controls.Add(new Label { Text = "● Perfil Noite — tema escuro", AutoSize = true, ForeColor = Color.White, Font = new Font("Segoe UI", 10.5f, FontStyle.Bold), Location = new Point(10, 5) });
             page.Controls.Add(day); page.Controls.Add(night);
 
             dayTime = TimePicker(ProfileStore.DayTime); nightTime = TimePicker(ProfileStore.NightTime);
@@ -753,7 +755,7 @@ namespace LGMonitorControl {
             UpdateRgbAvailability(dayMode, dayTemp, dayRed, dayGreen, dayBlue);
             UpdateRgbAvailability(nightMode, nightTemp, nightRed, nightGreen, nightBlue);
 
-            Button save = ButtonOf("Salvar e agendar", 18, 420); save.Size = new Size(180, 36); save.BackColor = Color.FromArgb(190, 0, 55); save.ForeColor = Color.White;
+            Button save = ButtonOf("Salvar e agendar", 18, 420); save.Size = new Size(180, 36); save.BackColor = Color.FromArgb(0, 120, 215); save.ForeColor = Color.White;
             Button applyDay = ButtonOf("Aplicar Dia agora", 215, 420); applyDay.Size = new Size(165, 36);
             Button applyNight = ButtonOf("Aplicar Noite agora", 395, 420); applyNight.Size = new Size(180, 36);
             save.Click += delegate { SaveProfilesAndSchedule(); };
@@ -765,14 +767,22 @@ namespace LGMonitorControl {
 
         void UpdateProfileAvailability(ComboBox mode, params Control[] manualControls) {
             bool custom = mode.SelectedIndex == 0;
-            foreach (Control control in manualControls) control.Enabled = custom;
+            foreach (Control control in manualControls) {
+                control.Enabled = custom;
+                control.BackColor = custom ? Color.FromArgb(48, 49, 56) : Color.FromArgb(42, 43, 48);
+                control.ForeColor = custom ? Color.WhiteSmoke : Color.FromArgb(110, 110, 110);
+            }
         }
 
         void UpdateRgbAvailability(ComboBox mode, ComboBox temperature, params Control[] rgbControls) {
             // Permite preparar/salvar os ganhos em qualquer temperatura do perfil
             // Personalizado. Eles só são enviados quando Temperatura=Usuário.
             bool enabled = mode.SelectedIndex == 0;
-            foreach (Control control in rgbControls) control.Enabled = enabled;
+            foreach (Control control in rgbControls) {
+                control.Enabled = enabled;
+                control.BackColor = enabled ? Color.FromArgb(48, 49, 56) : Color.FromArgb(42, 43, 48);
+                control.ForeColor = enabled ? Color.WhiteSmoke : Color.FromArgb(110, 110, 110);
+            }
         }
 
         void FillProfileBox(Control box, DateTimePicker time, ComboBox mode, ComboBox temp, NumericUpDown bright, NumericUpDown contrast, NumericUpDown sharpness, ComboBox gamma, NumericUpDown red, NumericUpDown green, NumericUpDown blue) {
@@ -923,8 +933,8 @@ namespace LGMonitorControl {
                 tab.UseVisualStyleBackColor = false;
                 tab.BackColor = surface;
             }
-            if (control is TabControl || control is Panel || control is GroupBox || control is FlowLayoutPanel || control is TableLayoutPanel || control is ScrollableControl) control.BackColor = surface;
-            if (control is Label || control is GroupBox || control is CheckBox || control is RadioButton) control.ForeColor = text;
+            if (control is TabControl || control is Panel || control is FlowLayoutPanel || control is TableLayoutPanel || control is ScrollableControl) control.BackColor = surface;
+            if (control is Label || control is CheckBox || control is RadioButton) control.ForeColor = text;
             if (control is TextBox || control is ComboBox || control is NumericUpDown || control is DateTimePicker) {
                 control.BackColor = field; control.ForeColor = text;
             }
@@ -959,7 +969,8 @@ namespace LGMonitorControl {
             AddSlider(page, L.T("Contrast", "Contraste"), 0x12, 0, 100, 70);
             AddSlider(page, L.T("Sharpness (Custom only)", "Nitidez (somente Personalizado)"), 0x87, 0, 100, 50);
 
-            GroupBox presets = new GroupBox { Text = L.T("Shortcuts", "Atalhos"), Location = new Point(18, 300), Size = new Size(590, 100), Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top };
+            Panel presets = new Panel { Location = new Point(18, 300), Size = new Size(590, 100), Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top, BackColor = Color.FromArgb(40, 40, 40), Padding = new Padding(16) };
+            presets.Controls.Add(new Label { Text = L.T("Shortcuts", "Atalhos"), AutoSize = true, ForeColor = Color.White, Font = new Font("Segoe UI", 10.5f, FontStyle.Bold), Location = new Point(10, 5) });
             Button day = ButtonOf(L.T("Day / Custom", "Dia / Personalizado"), 18, 30);
             Button night = ButtonOf(L.T("Night / Reader", "Noite / Leitura"), 205, 30);
             day.Click += delegate { Apply(0x15, 11, "Modo Personalizado aplicado"); };
@@ -1009,14 +1020,14 @@ namespace LGMonitorControl {
             pause.Click += delegate { ToggleFilterPause(); pause.Text = ProfileStore.FilterPaused ? L.T("Resume filter", "Continuar filtro") : L.T("Pause filter", "Pausar filtro"); };
             Button hide = ButtonOf(L.T("Hide to tray", "Esconder na bandeja"), 235, 240); hide.Size = new Size(190, 38);
             hide.Click += delegate { Hide(); ShowInTaskbar = false; };
-            Button exit = ButtonOf(L.T("Exit application", "Sair do aplicativo"), 446, 240); exit.Size = new Size(165, 38); exit.BackColor = Color.FromArgb(190, 0, 55); exit.ForeColor = Color.White;
+            Button exit = ButtonOf(L.T("Exit application", "Sair do aplicativo"), 446, 240); exit.Size = new Size(165, 38); exit.BackColor = Color.FromArgb(55, 55, 55); exit.ForeColor = Color.White;
             exit.Click += delegate { ExitApplication(); };
             page.Controls.Add(startup); page.Controls.Add(pause); page.Controls.Add(hide); page.Controls.Add(exit);
         }
 
         void BuildDonate(Control page) {
             ScrollableControl scrollable = page as ScrollableControl;
-            if (scrollable != null) scrollable.AutoScroll = true;
+            if (scrollable != null) scrollable.AutoScroll = false;
             page.Controls.Add(new Label { Text = "💖 Support My Work", Font = new Font("Segoe UI Semibold", 18F), AutoSize = true, Location = new Point(185, 18) });
 
             Button coffee = ButtonOf("Buy Me a Coffee", 75, 65); coffee.Size = new Size(210, 38);
