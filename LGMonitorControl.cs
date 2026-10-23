@@ -390,6 +390,7 @@ namespace LGMonitorControl {
         ComboBox[] profileMode = new ComboBox[4], profileGamma = new ComboBox[4], profileTemp = new ComboBox[4];
         NumericUpDown[] profileBrightness = new NumericUpDown[4], profileContrast = new NumericUpDown[4], profileSharpness = new NumericUpDown[4], profileRed = new NumericUpDown[4], profileGreen = new NumericUpDown[4], profileBlue = new NumericUpDown[4];
         DateTimePicker dayTime, nightTime;
+        TrackBar basicBrightness;
         ComboBox dayMode, nightMode, dayGamma, nightGamma, dayTemp, nightTemp;
         NumericUpDown dayBrightness, nightBrightness, dayContrast, nightContrast, daySharpness, nightSharpness, dayRed, dayGreen, dayBlue, nightRed, nightGreen, nightBlue;
         int row;
@@ -823,8 +824,8 @@ namespace LGMonitorControl {
         void BuildBasic(Control page) {
             ComboBox modes = NewCombo(new object[] { L.T("Custom", "Personalizado"), L.T("Reader", "Leitura"), L.T("Photo", "Foto"), "Cinema", L.T("Color Weakness", "Daltonismo"), L.T("Game", "Jogo") });
             int[] modeValues = { 11, 1, 16, 17, 32, 48 };
-            AddComboRow(page, L.T("Picture mode", "Modo de imagem"), modes, delegate { Apply(0x15, (uint)modeValues[modes.SelectedIndex], L.T("Mode: ", "Modo: ") + modes.Text); });
-            AddSlider(page, L.T("Brightness", "Brilho"), 0x10, 0, 100, 50);
+            AddComboRow(page, L.T("Picture mode", "Modo de imagem"), modes, delegate { ApplyTemporaryMode((uint)modeValues[modes.SelectedIndex], L.T("Mode: ", "Modo: ") + modes.Text); });
+            basicBrightness = AddSlider(page, L.T("Brightness", "Brilho"), 0x10, 0, 100, 50);
             AddSlider(page, L.T("Contrast", "Contraste"), 0x12, 0, 100, 70);
             AddSlider(page, L.T("Sharpness (Custom only)", "Nitidez (somente Personalizado)"), 0x87, 0, 100, 50);
 
@@ -992,7 +993,7 @@ namespace LGMonitorControl {
             Button apply = ButtonOf("Aplicar", 445, y - 2); apply.Click += delegate { action(); }; page.Controls.Add(apply);
         }
 
-        void AddSlider(Control page, string name, byte opcode, int min, int max, int initial, int wireOffset = 0) {
+        TrackBar AddSlider(Control page, string name, byte opcode, int min, int max, int initial, int wireOffset = 0) {
             int y = 24 + row * 68; row++;
             Label value = new Label { Text = initial.ToString(), AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Location = new Point(548, y + 4), Size = new Size(40, 25) };
             TrackBar bar = new TrackBar { Minimum = min, Maximum = max, Value = initial, TickFrequency = 10, SmallChange = 1, LargeChange = 5, Location = new Point(210, y), Size = new Size(335, 45) };
@@ -1001,6 +1002,7 @@ namespace LGMonitorControl {
             bar.MouseUp += delegate { Apply(opcode, (uint)(bar.Value + wireOffset), name + ": " + bar.Value); };
             bar.KeyUp += delegate(object sender, KeyEventArgs e) { if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right || e.KeyCode == Keys.Home || e.KeyCode == Keys.End) Apply(opcode, (uint)(bar.Value + wireOffset), name + ": " + bar.Value); };
             page.Controls.Add(bar); page.Controls.Add(value);
+            return bar;
         }
 
         Button ButtonOf(string text, int x, int y) {
@@ -1019,6 +1021,20 @@ namespace LGMonitorControl {
                 status.ForeColor = accent;
                 status.Text = "Falha: " + ex.Message;
             }
+        }
+
+        void ApplyTemporaryMode(uint mode, string description) {
+            try {
+                // Cinema e outros presets podem sobrescrever o brilho; reaplique-o depois.
+                MonitorApi.Set(0x15, 11); Thread.Sleep(350);
+                int changed = MonitorApi.Set(0x15, mode); Thread.Sleep(900);
+                if (basicBrightness != null) {
+                    MonitorApi.Set(0x10, (uint)basicBrightness.Value); Thread.Sleep(250);
+                    MonitorApi.Set(0x10, (uint)basicBrightness.Value);
+                }
+                status.ForeColor = Color.FromArgb(25, 115, 55);
+                status.Text = "✓ " + description + " — enviado para " + changed + " monitor(es).";
+            } catch (Exception ex) { status.ForeColor = accent; status.Text = "Falha: " + ex.Message; }
         }
 
         void Apply(byte opcode, uint value, string description) {
