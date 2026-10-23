@@ -1025,18 +1025,13 @@ namespace LGMonitorControl {
 
         void ApplyTemporaryMode(uint mode, string description) {
             try {
-                // Cinema e outros presets podem sobrescrever o brilho; reaplique-o depois.
-                MonitorApi.Set(0x15, 11); Thread.Sleep(350);
-                int changed = MonitorApi.Set(0x15, mode); Thread.Sleep(900);
-                if (basicBrightness != null) {
-                    MonitorApi.Set(0x10, (uint)basicBrightness.Value); Thread.Sleep(250);
-                    MonitorApi.Set(0x10, (uint)basicBrightness.Value);
-                }
-                // O firmware pode voltar para Personalizado após alterar o brilho.
-                // Reaplicar o preset por último mantém Cinema visível no OSD.
-                Thread.Sleep(350); MonitorApi.Set(0x15, mode);
+                int brightness = basicBrightness == null ? 50 : basicBrightness.Value;
+                Profile temporary = new Profile { Name = "Temporario", Mode = (int)mode,
+                    Brightness = brightness, Contrast = 70, Sharpness = 50,
+                    Gamma = 30720, Temperature = 5, Red = 50, Green = 50, Blue = 50 };
+                ProfileStore.Apply(temporary);
                 status.ForeColor = Color.FromArgb(25, 115, 55);
-                status.Text = "✓ " + description + " — enviado para " + changed + " monitor(es).";
+                status.Text = "✓ " + description + " — brilho " + brightness + ".";
             } catch (Exception ex) { status.ForeColor = accent; status.Text = "Falha: " + ex.Message; }
         }
 
