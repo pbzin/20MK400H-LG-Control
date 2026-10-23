@@ -545,7 +545,7 @@ namespace LGMonitorControl {
             headerSubtitle.Text = L.T("Direct monitor control • write-only protocol", "Controle direto do monitor • protocolo somente escrita"); headerSubtitle.ForeColor = Color.DimGray; headerSubtitle.AutoSize = true; headerSubtitle.Location = new Point(28, 58);
             Controls.Add(headerTitle); Controls.Add(headerSubtitle);
 
-            TabControl tabs = new DarkTabControl { Location = new Point(22, 88), Size = new Size(816, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, DrawMode = TabDrawMode.OwnerDrawFixed, SizeMode = TabSizeMode.Fixed, Appearance = TabAppearance.FlatButtons, ItemSize = new Size(130, 36), Padding = new Point(12, 4) };
+            TabControl tabs = new DarkTabControl { Location = new Point(22, 88), Size = new Size(816, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, DrawMode = TabDrawMode.OwnerDrawFixed, SizeMode = TabSizeMode.Fixed, Appearance = TabAppearance.FlatButtons, ItemSize = new Size(130, 36), Padding = new Point(0, 0) };
             tabs.DrawItem += delegate(object sender, DrawItemEventArgs e) {
                 TabControl tabsControl = (TabControl)sender;
                 bool selected = (e.State & DrawItemState.Selected) != 0;
