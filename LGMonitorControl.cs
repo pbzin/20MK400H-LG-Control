@@ -410,14 +410,20 @@ namespace LGMonitorControl {
         }
     }
 
-    sealed class DarkTimePicker : DarkComboBox {
+    sealed class DarkTimePicker : MaskedTextBox {
         public DateTime Value {
-            get { DateTime parsed; return DateTime.TryParseExact(Convert.ToString(SelectedItem), "HH:mm", null, System.Globalization.DateTimeStyles.None, out parsed) ? DateTime.Today.Add(parsed.TimeOfDay) : DateTime.Today; }
-            set { string text = value.ToString("HH:mm"); int index = Items.IndexOf(text); if (index >= 0) SelectedIndex = index; }
+            get { DateTime parsed; return DateTime.TryParseExact(Text, "HH:mm", null, System.Globalization.DateTimeStyles.None, out parsed) ? DateTime.Today.Add(parsed.TimeOfDay) : DateTime.Today; }
+            set { Text = value.ToString("HH:mm"); }
         }
         public DarkTimePicker(string value) {
+            Mask = "00:00";
+            ValidatingType = typeof(DateTime);
+            BackColor = Color.FromArgb(30, 30, 30);
+            ForeColor = Color.White;
+            BorderStyle = BorderStyle.FixedSingle;
+            TextAlign = HorizontalAlignment.Center;
+            Font = new Font("Segoe UI", 9.5f, FontStyle.Regular);
             Width = 85;
-            for (int hour = 0; hour < 24; hour++) for (int minute = 0; minute < 60; minute += 15) Items.Add(new DateTime(2000, 1, 1, hour, minute, 0).ToString("HH:mm"));
             TimeSpan parsed; if (!TimeSpan.TryParse(value, out parsed)) parsed = TimeSpan.Zero;
             Value = DateTime.Today.Add(parsed);
         }
