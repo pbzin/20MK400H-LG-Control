@@ -717,7 +717,7 @@ namespace LGMonitorControl {
 
         ComboBox ProfileMode(int value) {
             ComboBox box = NewCombo(new object[] { "Personalizado", "Leitura", "Foto", "Cinema", "Daltonismo", "Jogo" }); box.Width = 165;
-            int[] values = { 11, 1, 16, 17, 32, 48 }; int index = Array.IndexOf(values, value); box.SelectedIndex = index < 0 ? 0 : index; return box;
+            int[] values = { 11, 1, 32, 48, 6, 28 }; int index = Array.IndexOf(values, value); box.SelectedIndex = index < 0 ? 0 : index; return box;
         }
 
         ComboBox ProfileTemp(int value) {
@@ -731,7 +731,7 @@ namespace LGMonitorControl {
         }
 
         void SaveProfileValues4() {
-            int[] modes = { 11, 1, 16, 17, 32, 48 }, temps = { 3, 5, 9, 11 }, gammas = { 25600, 30720, 35840, 40960 };
+            int[] modes = { 11, 1, 32, 48, 6, 28 }, temps = { 3, 5, 9, 11 }, gammas = { 25600, 30720, 35840, 40960 };
             int[] kelvins = { 4000, 3000, 2500, 2000, 1500 };
             for (int i = 0; i < ProfileStore.Profiles.Length; i++) {
                 Profile p = ProfileStore.Profiles[i];
@@ -780,7 +780,7 @@ namespace LGMonitorControl {
         }
 
         void SaveProfileValues() {
-            int[] modes = { 11, 1, 16, 17, 32, 48 }, temps = { 3, 5, 9, 11 }, gammas = { 25600, 30720, 35840, 40960 };
+            int[] modes = { 11, 1, 32, 48, 6, 28 }, temps = { 3, 5, 9, 11 }, gammas = { 25600, 30720, 35840, 40960 };
             ProfileStore.DayTime = dayTime.Value.ToString("HH:mm"); ProfileStore.NightTime = nightTime.Value.ToString("HH:mm");
             ProfileStore.Day.Mode = modes[dayMode.SelectedIndex]; ProfileStore.Night.Mode = modes[nightMode.SelectedIndex];
             ProfileStore.Day.Temperature = temps[dayTemp.SelectedIndex]; ProfileStore.Night.Temperature = temps[nightTemp.SelectedIndex];
@@ -823,7 +823,7 @@ namespace LGMonitorControl {
 
         void BuildBasic(Control page) {
             ComboBox modes = NewCombo(new object[] { L.T("Custom", "Personalizado"), L.T("Reader", "Leitura"), L.T("Photo", "Foto"), "Cinema", L.T("Color Weakness", "Daltonismo"), L.T("Game", "Jogo") });
-            int[] modeValues = { 11, 1, 16, 17, 32, 48 };
+            int[] modeValues = { 11, 1, 32, 48, 6, 28 };
             AddComboRow(page, L.T("Picture mode", "Modo de imagem"), modes, delegate { ApplyTemporaryMode((uint)modeValues[modes.SelectedIndex], L.T("Mode: ", "Modo: ") + modes.Text); });
             basicBrightness = AddSlider(page, L.T("Brightness", "Brilho"), 0x10, 0, 100, 50);
             AddSlider(page, L.T("Contrast", "Contraste"), 0x12, 0, 100, 70);
