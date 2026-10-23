@@ -380,6 +380,7 @@ namespace LGMonitorControl {
         readonly Color accent = Color.FromArgb(190, 0, 55);
         readonly NotifyIcon trayIcon = new NotifyIcon();
         ToolStripMenuItem pauseFilterItem;
+        ToolStripMenuItem activeProfileItem;
         bool allowExit;
         DateTimePicker[] profileTime = new DateTimePicker[4];
         TextBox[] profileName = new TextBox[4];
@@ -485,6 +486,8 @@ namespace LGMonitorControl {
         void InitializeTray() {
             ContextMenuStrip menu = new ContextMenuStrip();
             ToolStripMenuItem open = new ToolStripMenuItem(L.T("Open LG Monitor Control", "Abrir LG Monitor Control"));
+            activeProfileItem = new ToolStripMenuItem(); activeProfileItem.Enabled = false;
+            UpdateActiveProfileMenuText();
             ToolStripMenuItem reset = new ToolStripMenuItem(L.T("Restore scheduled profile now", "Restaurar perfil do horário atual"));
             ToolStripMenuItem exit = new ToolStripMenuItem(L.T("Exit application", "Sair do aplicativo"));
             pauseFilterItem = new ToolStripMenuItem();
@@ -493,6 +496,7 @@ namespace LGMonitorControl {
             reset.Click += delegate { RestoreScheduledProfile(); };
             pauseFilterItem.Click += delegate { ToggleFilterPause(); };
             exit.Click += delegate { ExitApplication(); };
+            menu.Items.Add(activeProfileItem); menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(open); menu.Items.Add(reset); menu.Items.Add(pauseFilterItem); menu.Items.Add(new ToolStripSeparator());
             for (int i = 0; i < ProfileStore.Profiles.Length; i++) {
                 int idx = i;
@@ -501,6 +505,7 @@ namespace LGMonitorControl {
                 menu.Items.Add(item);
             }
             menu.Items.Add(new ToolStripSeparator()); menu.Items.Add(exit);
+            menu.Opening += delegate { UpdateActiveProfileMenuText(); };
             trayIcon.Icon = SystemIcons.Application;
             trayIcon.Text = "LG 20MK400H Control";
             trayIcon.ContextMenuStrip = menu;
@@ -511,6 +516,13 @@ namespace LGMonitorControl {
         void UpdatePauseMenuText() {
             if (pauseFilterItem != null)
                 pauseFilterItem.Text = ProfileStore.FilterPaused ? L.T("Resume night filter", "Continuar filtro noturno") : L.T("Pause night filter", "Pausar filtro noturno");
+        }
+
+        void UpdateActiveProfileMenuText() {
+            if (activeProfileItem != null) {
+                int index = ProfileStore.CurrentIndex();
+                activeProfileItem.Text = L.T("Active profile: ", "Perfil ativo: ") + ProfileStore.Profiles[index].Name;
+            }
         }
 
         void ToggleFilterPause() {
@@ -525,6 +537,7 @@ namespace LGMonitorControl {
                 status.Text = L.T("Night filter resumed for the current profile.", "Filtro noturno retomado conforme o perfil atual.");
             }
             UpdatePauseMenuText();
+            UpdateActiveProfileMenuText();
         }
 
         void RestoreScheduledProfile() {
@@ -535,6 +548,7 @@ namespace LGMonitorControl {
                 ProfileStore.Apply(ProfileStore.Profiles[index]);
                 SetTheme(index >= 2);
                 UpdatePauseMenuText();
+                UpdateActiveProfileMenuText();
                 status.ForeColor = Color.FromArgb(25, 115, 55);
                 status.Text = L.T("Scheduled profile restored: ", "Perfil do horário restaurado: ") + ProfileStore.Profiles[index].Name;
                 trayIcon.ShowBalloonTip(1800, "LG Monitor Control", status.Text, ToolTipIcon.Info);
@@ -762,7 +776,7 @@ namespace LGMonitorControl {
         }
 
         void ApplyProfile(Profile profile) {
-            try { ProfileStore.Apply(profile); status.ForeColor = Color.FromArgb(25, 115, 55); status.Text = "✓ Perfil " + profile.Name + " aplicado."; SetTheme(Array.IndexOf(ProfileStore.Profiles, profile) >= 2); }
+            try { ProfileStore.Apply(profile); UpdateActiveProfileMenuText(); status.ForeColor = Color.FromArgb(25, 115, 55); status.Text = "✓ Perfil " + profile.Name + " aplicado."; SetTheme(Array.IndexOf(ProfileStore.Profiles, profile) >= 2); }
             catch (Exception ex) { status.ForeColor = accent; status.Text = "Falha: " + ex.Message; }
         }
 
