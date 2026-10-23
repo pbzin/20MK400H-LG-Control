@@ -423,6 +423,19 @@ namespace LGMonitorControl {
         }
     }
 
+    sealed class DarkValueBox : TextBox {
+        public int Minimum { get; set; }
+        public int Maximum { get; set; }
+        public int Value {
+            get { int value; return int.TryParse(Text, out value) ? Math.Max(Minimum, Math.Min(Maximum, value)) : Minimum; }
+            set { Text = Math.Max(Minimum, Math.Min(Maximum, value)).ToString(); }
+        }
+        public DarkValueBox() {
+            Minimum = 0; Maximum = 100; BorderStyle = BorderStyle.FixedSingle;
+            BackColor = Color.FromArgb(48, 49, 56); ForeColor = Color.WhiteSmoke;
+        }
+    }
+
     sealed class DarkNumericUpDown : NumericUpDown {
         [DllImport("user32.dll", CharSet = CharSet.Auto)] static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string className, string title);
         [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int command);
@@ -526,7 +539,7 @@ namespace LGMonitorControl {
         CheckBox[] profileNightFilter = new CheckBox[4];
         ComboBox[] profileNightKelvin = new ComboBox[4];
         ComboBox[] profileMode = new ComboBox[4], profileGamma = new ComboBox[4], profileTemp = new ComboBox[4];
-        NumericUpDown[] profileBrightness = new NumericUpDown[4], profileContrast = new NumericUpDown[4], profileSharpness = new NumericUpDown[4], profileRed = new NumericUpDown[4], profileGreen = new NumericUpDown[4], profileBlue = new NumericUpDown[4];
+        DarkValueBox[] profileBrightness = new DarkValueBox[4], profileContrast = new DarkValueBox[4], profileSharpness = new DarkValueBox[4], profileRed = new DarkValueBox[4], profileGreen = new DarkValueBox[4], profileBlue = new DarkValueBox[4];
         DarkTimePicker dayTime, nightTime;
         TrackBar basicBrightness;
         System.Windows.Forms.Timer themeTimer;
@@ -543,7 +556,7 @@ namespace LGMonitorControl {
         [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
         static extern int SetWindowTheme(IntPtr hwnd, string subAppName, string subIdList);
         ComboBox dayMode, nightMode, dayGamma, nightGamma, dayTemp, nightTemp;
-        NumericUpDown dayBrightness, nightBrightness, dayContrast, nightContrast, daySharpness, nightSharpness, dayRed, dayGreen, dayBlue, nightRed, nightGreen, nightBlue;
+        DarkValueBox dayBrightness, nightBrightness, dayContrast, nightContrast, daySharpness, nightSharpness, dayRed, dayGreen, dayBlue, nightRed, nightGreen, nightBlue;
         int row;
 
         public MainForm(bool startHidden = false) {
@@ -554,15 +567,15 @@ namespace LGMonitorControl {
             ProfileStore.Load();
             SyncEnabledFromScheduler();
             SystemEvents.SessionSwitch += OnSessionSwitch;
-            ClientSize = new Size(860, 680);
-            MinimumSize = new Size(876, 688);
+            ClientSize = new Size(900, 680);
+            MinimumSize = new Size(916, 688);
             StartPosition = FormStartPosition.CenterScreen;
 
             headerTitle.Text = "LG 20MK400H"; headerTitle.Font = new Font("Segoe UI Semibold", 20F); headerTitle.AutoSize = true; headerTitle.Location = new Point(24, 18);
             headerSubtitle.Text = L.T("Direct monitor control • write-only protocol", "Controle direto do monitor • protocolo somente escrita"); headerSubtitle.ForeColor = Color.DimGray; headerSubtitle.AutoSize = true; headerSubtitle.Location = new Point(28, 58);
             Controls.Add(headerTitle); Controls.Add(headerSubtitle);
 
-            TabControl tabs = new DarkTabControl { Location = new Point(22, 88), Size = new Size(816, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, DrawMode = TabDrawMode.OwnerDrawFixed, SizeMode = TabSizeMode.Fixed, Appearance = TabAppearance.FlatButtons, ItemSize = new Size(130, 36), Padding = new Point(0, 0) };
+            TabControl tabs = new DarkTabControl { Location = new Point(22, 88), Size = new Size(856, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, DrawMode = TabDrawMode.OwnerDrawFixed, SizeMode = TabSizeMode.Fixed, Appearance = TabAppearance.FlatButtons, ItemSize = new Size(130, 36), Padding = new Point(0, 0) };
             tabs.DrawItem += delegate(object sender, DrawItemEventArgs e) {
                 TabControl tabsControl = (TabControl)sender;
                 bool selected = (e.State & DrawItemState.Selected) != 0;
@@ -594,10 +607,10 @@ namespace LGMonitorControl {
             status.AutoEllipsis = true;
             status.ForeColor = Color.FromArgb(160, 160, 160);
             status.Location = new Point(26, 640);
-            status.Size = new Size(805, 24);
+            status.Size = new Size(845, 24);
             status.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             Controls.Add(status);
-            LinkLabel author = new LinkLabel { Text = L.T("Developed by pbzin", "Desenvolvido por pbzin"), AutoSize = true, Location = new Point(680, 640), Anchor = AnchorStyles.Bottom | AnchorStyles.Right, LinkColor = Color.FromArgb(120, 120, 120), ActiveLinkColor = Color.FromArgb(170, 170, 170) };
+            LinkLabel author = new LinkLabel { Text = L.T("Developed by pbzin", "Desenvolvido por pbzin"), AutoSize = true, Location = new Point(720, 640), Anchor = AnchorStyles.Bottom | AnchorStyles.Right, LinkColor = Color.FromArgb(120, 120, 120), ActiveLinkColor = Color.FromArgb(170, 170, 170) };
             author.LinkClicked += delegate { OpenUrl("https://github.com/pbzin"); };
             Controls.Add(author); author.BringToFront();
             SetTheme(true);
@@ -878,7 +891,7 @@ namespace LGMonitorControl {
             }
         }
 
-        void FillProfileBox(Control box, DarkTimePicker time, ComboBox mode, ComboBox temp, NumericUpDown bright, NumericUpDown contrast, NumericUpDown sharpness, ComboBox gamma, NumericUpDown red, NumericUpDown green, NumericUpDown blue) {
+        void FillProfileBox(Control box, DarkTimePicker time, ComboBox mode, ComboBox temp, DarkValueBox bright, DarkValueBox contrast, DarkValueBox sharpness, ComboBox gamma, DarkValueBox red, DarkValueBox green, DarkValueBox blue) {
             AddSmall(box, "Começa", time, 14, 28); AddSmall(box, "Modo", mode, 205, 28); AddSmall(box, "Temperatura", temp, 396, 28);
             bright.Width = contrast.Width = sharpness.Width = red.Width = green.Width = blue.Width = 60; gamma.Width = 82;
             AddSmall(box, "Brilho", bright, 14, 92); AddSmall(box, "Contraste", contrast, 92, 92); AddSmall(box, "Nitidez", sharpness, 178, 92);
@@ -891,7 +904,7 @@ namespace LGMonitorControl {
             if (textBox != null) textBox.BorderStyle = BorderStyle.FixedSingle;
             ComboBox combo = control as ComboBox;
             if (combo != null) combo.FlatStyle = FlatStyle.Flat;
-            NumericUpDown number = control as NumericUpDown;
+            DarkValueBox number = control as DarkValueBox;
             if (number != null) number.BorderStyle = BorderStyle.FixedSingle;
             control.BackColor = Color.FromArgb(48, 49, 56);
             control.ForeColor = Color.WhiteSmoke;
@@ -900,7 +913,7 @@ namespace LGMonitorControl {
 
         DarkTimePicker TimePicker(string value) { return new DarkTimePicker(value); }
 
-        NumericUpDown Number(int value) { return new DarkNumericUpDown { Minimum = 0, Maximum = 100, Value = value, Width = 75 }; }
+        DarkValueBox Number(int value) { return new DarkValueBox { Minimum = 0, Maximum = 100, Value = value, Width = 75 }; }
 
         ComboBox ProfileMode(int value) {
             ComboBox box = NewCombo(new object[] { "Personalizado", "Leitura", "Foto", "Cinema", "Daltonismo", "Jogo" }); box.Width = 165;
@@ -1031,7 +1044,7 @@ namespace LGMonitorControl {
             if (control is Panel && Equals(control.Tag, "card")) control.BackColor = dark ? Color.FromArgb(40, 40, 40) : Color.White;
             else if (control is TabControl || control is Panel || control is FlowLayoutPanel || control is TableLayoutPanel || control is ScrollableControl) control.BackColor = surface;
             if (control is Label || control is CheckBox || control is RadioButton) control.ForeColor = text;
-            if (control is TextBox || control is ComboBox || control is NumericUpDown || control is DateTimePicker) {
+            if (control is TextBox || control is ComboBox || control is NumericUpDown || control is DarkValueBox || control is DateTimePicker) {
                 if (control.IsHandleCreated) SetWindowTheme(control.Handle, "", "");
                 control.BackColor = control.Enabled ? field : (dark ? Color.FromArgb(42, 43, 48) : Color.FromArgb(235, 235, 238));
                 control.ForeColor = control.Enabled ? text : (dark ? Color.FromArgb(110, 110, 110) : Color.FromArgb(150, 150, 150));
