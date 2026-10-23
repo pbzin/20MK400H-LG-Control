@@ -1032,6 +1032,9 @@ namespace LGMonitorControl {
                     MonitorApi.Set(0x10, (uint)basicBrightness.Value); Thread.Sleep(250);
                     MonitorApi.Set(0x10, (uint)basicBrightness.Value);
                 }
+                // O firmware pode voltar para Personalizado após alterar o brilho.
+                // Reaplicar o preset por último mantém Cinema visível no OSD.
+                Thread.Sleep(350); MonitorApi.Set(0x15, mode);
                 status.ForeColor = Color.FromArgb(25, 115, 55);
                 status.Text = "✓ " + description + " — enviado para " + changed + " monitor(es).";
             } catch (Exception ex) { status.ForeColor = accent; status.Text = "Falha: " + ex.Message; }
