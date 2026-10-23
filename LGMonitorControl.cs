@@ -813,6 +813,9 @@ namespace LGMonitorControl {
         }
 
         void SetTheme(bool dark) {
+            // A interface permanece escura em todos os perfis; o tema do monitor
+            // e o filtro de cor continuam sendo controlados separadamente.
+            dark = true;
             BackColor = dark ? Color.FromArgb(28, 29, 33) : Color.FromArgb(245, 245, 247);
             ForeColor = dark ? Color.WhiteSmoke : Color.FromArgb(35, 35, 40);
             ApplyControlTheme(this, dark);
@@ -843,6 +846,7 @@ namespace LGMonitorControl {
                 bool accentButton = button.BackColor.R > 130 && button.BackColor.G < 80 && button.BackColor.B < 100;
                 if (!accentButton) { button.BackColor = dark ? Color.FromArgb(58, 59, 68) : Color.White; button.ForeColor = text; }
             }
+            if (control is PictureBox) control.BackColor = dark ? Color.FromArgb(35, 36, 42) : Color.WhiteSmoke;
             foreach (Control child in control.Controls) ApplyControlTheme(child, dark);
         }
 
