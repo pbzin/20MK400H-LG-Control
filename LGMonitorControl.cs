@@ -394,26 +394,7 @@ namespace LGMonitorControl {
         }
     }
 
-    sealed class DarkTimePicker : DateTimePicker {
-        [DllImport("user32.dll", CharSet = CharSet.Auto)] static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string className, string title);
-        [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam);
-        [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int command);
-        const int EM_SETBKGNDCOLOR = 0x0443;
-        const int SW_HIDE = 0;
-        protected override void OnHandleCreated(EventArgs e) {
-            base.OnHandleCreated(e);
-            IntPtr edit = FindWindowEx(Handle, IntPtr.Zero, "Edit", null);
-            if (edit != IntPtr.Zero) SendMessage(edit, EM_SETBKGNDCOLOR, IntPtr.Zero, new IntPtr(Color.FromArgb(48, 49, 56).ToArgb() & 0x00FFFFFF));
-        }
-        protected override void OnPaint(PaintEventArgs e) {
-            e.Graphics.Clear(Color.FromArgb(48, 49, 56));
-            TextRenderer.DrawText(e.Graphics, Value.ToString("HH:mm"), Font, new Rectangle(4, 0, Width - 22, Height), Enabled ? Color.WhiteSmoke : Color.FromArgb(110, 110, 110), TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
-            using (Brush brush = new SolidBrush(Color.FromArgb(70, 70, 78))) e.Graphics.FillRectangle(brush, Width - 20, 0, 20, Height);
-            using (Pen pen = new Pen(Color.WhiteSmoke, 1)) { e.Graphics.DrawLine(pen, Width - 14, Height / 2 - 2, Width - 10, Height / 2 - 2); e.Graphics.DrawLine(pen, Width - 14, Height / 2 + 2, Width - 10, Height / 2 + 2); }
-        }
-    }
-
-    sealed class DarkComboBox : ComboBox {
+    class DarkComboBox : ComboBox {
         public DarkComboBox() { SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true); }
         protected override void OnPaint(PaintEventArgs e) {
             Color background = Enabled ? Color.FromArgb(48, 49, 56) : Color.FromArgb(42, 43, 48);
@@ -424,6 +405,19 @@ namespace LGMonitorControl {
             using (Brush brush = new SolidBrush(Color.FromArgb(70, 70, 78))) e.Graphics.FillRectangle(brush, Width - 22, 0, 22, Height);
             Point[] arrow = { new Point(Width - 15, Height / 2 - 2), new Point(Width - 7, Height / 2 - 2), new Point(Width - 11, Height / 2 + 3) };
             using (Brush brush = new SolidBrush(foreground)) e.Graphics.FillPolygon(brush, arrow);
+        }
+    }
+
+    sealed class DarkTimePicker : DarkComboBox {
+        public DateTime Value {
+            get { DateTime parsed; return DateTime.TryParseExact(Convert.ToString(SelectedItem), "HH:mm", null, System.Globalization.DateTimeStyles.None, out parsed) ? DateTime.Today.Add(parsed.TimeOfDay) : DateTime.Today; }
+            set { string text = value.ToString("HH:mm"); int index = Items.IndexOf(text); if (index >= 0) SelectedIndex = index; }
+        }
+        public DarkTimePicker(string value) {
+            Width = 85;
+            for (int hour = 0; hour < 24; hour++) for (int minute = 0; minute < 60; minute += 15) Items.Add(new DateTime(2000, 1, 1, hour, minute, 0).ToString("HH:mm"));
+            TimeSpan parsed; if (!TimeSpan.TryParse(value, out parsed)) parsed = TimeSpan.Zero;
+            Value = DateTime.Today.Add(parsed);
         }
     }
 
@@ -509,14 +503,14 @@ namespace LGMonitorControl {
         ToolStripMenuItem pauseFilterItem;
         ToolStripMenuItem activeProfileItem;
         bool allowExit;
-        DateTimePicker[] profileTime = new DateTimePicker[4];
+        DarkTimePicker[] profileTime = new DarkTimePicker[4];
         TextBox[] profileName = new TextBox[4];
         CheckBox[] profileEnabled = new CheckBox[4];
         CheckBox[] profileNightFilter = new CheckBox[4];
         ComboBox[] profileNightKelvin = new ComboBox[4];
         ComboBox[] profileMode = new ComboBox[4], profileGamma = new ComboBox[4], profileTemp = new ComboBox[4];
         NumericUpDown[] profileBrightness = new NumericUpDown[4], profileContrast = new NumericUpDown[4], profileSharpness = new NumericUpDown[4], profileRed = new NumericUpDown[4], profileGreen = new NumericUpDown[4], profileBlue = new NumericUpDown[4];
-        DateTimePicker dayTime, nightTime;
+        DarkTimePicker dayTime, nightTime;
         TrackBar basicBrightness;
         System.Windows.Forms.Timer themeTimer;
 
@@ -867,7 +861,7 @@ namespace LGMonitorControl {
             }
         }
 
-        void FillProfileBox(Control box, DateTimePicker time, ComboBox mode, ComboBox temp, NumericUpDown bright, NumericUpDown contrast, NumericUpDown sharpness, ComboBox gamma, NumericUpDown red, NumericUpDown green, NumericUpDown blue) {
+        void FillProfileBox(Control box, DarkTimePicker time, ComboBox mode, ComboBox temp, NumericUpDown bright, NumericUpDown contrast, NumericUpDown sharpness, ComboBox gamma, NumericUpDown red, NumericUpDown green, NumericUpDown blue) {
             AddSmall(box, "Começa", time, 14, 28); AddSmall(box, "Modo", mode, 205, 28); AddSmall(box, "Temperatura", temp, 396, 28);
             bright.Width = contrast.Width = sharpness.Width = red.Width = green.Width = blue.Width = 60; gamma.Width = 82;
             AddSmall(box, "Brilho", bright, 14, 92); AddSmall(box, "Contraste", contrast, 92, 92); AddSmall(box, "Nitidez", sharpness, 178, 92);
@@ -887,11 +881,7 @@ namespace LGMonitorControl {
             control.Location = new Point(x, y + 22); parent.Controls.Add(control);
         }
 
-        DateTimePicker TimePicker(string value) {
-            DateTimePicker picker = new DarkTimePicker { Format = DateTimePickerFormat.Custom, CustomFormat = "HH:mm", ShowUpDown = true, Width = 105, CalendarMonthBackground = Color.FromArgb(48, 49, 56), CalendarTitleBackColor = Color.FromArgb(35, 36, 42), CalendarTitleForeColor = Color.WhiteSmoke };
-            TimeSpan parsed; if (TimeSpan.TryParse(value, out parsed)) picker.Value = DateTime.Today.Add(parsed);
-            return picker;
-        }
+        DarkTimePicker TimePicker(string value) { return new DarkTimePicker(value); }
 
         NumericUpDown Number(int value) { return new DarkNumericUpDown { Minimum = 0, Maximum = 100, Value = value, Width = 75 }; }
 
