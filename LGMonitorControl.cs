@@ -1233,7 +1233,7 @@ namespace LGMonitorControl {
             page.Controls.Add(opcode); page.Controls.Add(value); page.Controls.Add(raw);
 
             TextBox reference = new TextBox {
-                Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical,
+                Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.None,
                 Location = new Point(20, 205), Size = new Size(570, 215), BackColor = Color.White,
                 Text = "Mapa extraído do OnScreen Control 9.47:\r\n" +
                        "0x10 Brilho | 0x12 Contraste | 0x15 Modo de imagem\r\n" +
