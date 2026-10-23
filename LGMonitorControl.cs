@@ -796,7 +796,7 @@ namespace LGMonitorControl {
             page.Controls.Add(panel);
             for (int i = 0; i < ProfileStore.Profiles.Length; i++) {
                 Profile p = ProfileStore.Profiles[i];
-                Panel box = new Panel { Location = new Point(8, 4 + i * 112), Size = new Size(780, 106), BackColor = Color.FromArgb(40, 40, 40), Padding = new Padding(16), Margin = new Padding(0, 0, 0, 12), Tag = "card" };
+                Panel box = new Panel { Location = new Point(8, 4 + i * 120), Size = new Size(780, 106), BackColor = Color.FromArgb(40, 40, 40), Padding = new Padding(16), Margin = new Padding(0, 0, 0, 12), Tag = "card" };
                 panel.Controls.Add(box);
                 box.Controls.Add(new Label { Text = L.T("Profile ", "Perfil ") + (i + 1), AutoSize = true, Font = new Font("Segoe UI", 10.5f, FontStyle.Bold), ForeColor = Color.White, Location = new Point(10, 5) });
                 profileName[i] = new TextBox { Text = p.Name, Width = 105 };
