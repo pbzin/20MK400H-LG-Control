@@ -383,6 +383,17 @@ namespace LGMonitorControl {
         }
     }
 
+    sealed class DarkTimePicker : DateTimePicker {
+        [DllImport("user32.dll", CharSet = CharSet.Auto)] static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string className, string title);
+        [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam);
+        const int EM_SETBKGNDCOLOR = 0x0443;
+        protected override void OnHandleCreated(EventArgs e) {
+            base.OnHandleCreated(e);
+            IntPtr edit = FindWindowEx(Handle, IntPtr.Zero, "Edit", null);
+            if (edit != IntPtr.Zero) SendMessage(edit, EM_SETBKGNDCOLOR, IntPtr.Zero, new IntPtr(Color.FromArgb(48, 49, 56).ToArgb() & 0x00FFFFFF));
+        }
+    }
+
     static class WindowChrome {
         [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
         public static void ApplyDarkTitleBar(Form form) {
@@ -744,7 +755,7 @@ namespace LGMonitorControl {
         }
 
         DateTimePicker TimePicker(string value) {
-            DateTimePicker picker = new DateTimePicker { Format = DateTimePickerFormat.Custom, CustomFormat = "HH:mm", ShowUpDown = true, Width = 105, CalendarMonthBackground = Color.FromArgb(48, 49, 56), CalendarTitleBackColor = Color.FromArgb(35, 36, 42), CalendarTitleForeColor = Color.WhiteSmoke };
+            DateTimePicker picker = new DarkTimePicker { Format = DateTimePickerFormat.Custom, CustomFormat = "HH:mm", ShowUpDown = true, Width = 105, CalendarMonthBackground = Color.FromArgb(48, 49, 56), CalendarTitleBackColor = Color.FromArgb(35, 36, 42), CalendarTitleForeColor = Color.WhiteSmoke };
             TimeSpan parsed; if (TimeSpan.TryParse(value, out parsed)) picker.Value = DateTime.Today.Add(parsed);
             return picker;
         }
