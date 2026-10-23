@@ -375,7 +375,6 @@ namespace LGMonitorControl {
 
     sealed class DarkTabControl : TabControl {
         public DarkTabControl() {
-            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
             BackColor = Color.FromArgb(35, 36, 42);
         }
         protected override void OnPaintBackground(PaintEventArgs e) {
@@ -470,16 +469,17 @@ namespace LGMonitorControl {
             headerSubtitle.Text = L.T("Direct monitor control • write-only protocol", "Controle direto do monitor • protocolo somente escrita"); headerSubtitle.ForeColor = Color.DimGray; headerSubtitle.AutoSize = true; headerSubtitle.Location = new Point(28, 58);
             Controls.Add(headerTitle); Controls.Add(headerSubtitle);
 
-            TabControl tabs = new DarkTabControl { Location = new Point(22, 88), Size = new Size(646, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, DrawMode = TabDrawMode.OwnerDrawFixed, ItemSize = new Size(105, 28), Padding = new Point(12, 4) };
+            TabControl tabs = new DarkTabControl { Location = new Point(22, 88), Size = new Size(646, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, DrawMode = TabDrawMode.OwnerDrawFixed, SizeMode = TabSizeMode.Fixed, ItemSize = new Size(130, 36), Padding = new Point(12, 4) };
             tabs.DrawItem += delegate(object sender, DrawItemEventArgs e) {
                 TabControl tabsControl = (TabControl)sender;
                 bool selected = (e.State & DrawItemState.Selected) != 0;
-                Color background = selected ? Color.FromArgb(190, 0, 55) : Color.FromArgb(48, 49, 56);
+                Color background = selected ? Color.FromArgb(45, 45, 45) : Color.FromArgb(32, 32, 32);
                 using (Brush brush = new SolidBrush(background)) e.Graphics.FillRectangle(brush, e.Bounds);
-                using (Brush brush = new SolidBrush(Color.WhiteSmoke)) {
+                using (Brush brush = new SolidBrush(selected ? Color.White : Color.FromArgb(170, 170, 170))) {
                     StringFormat format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
                     e.Graphics.DrawString(tabsControl.TabPages[e.Index].Text, Font, brush, e.Bounds, format);
                 }
+                if (selected) using (Brush brush = new SolidBrush(Color.FromArgb(0, 120, 215))) e.Graphics.FillRectangle(brush, new Rectangle(e.Bounds.X, e.Bounds.Bottom - 2, e.Bounds.Width, 2));
             };
             TabPage profiles = new TabPage(L.T("Profiles", "Perfis"));
             TabPage basic = new TabPage(L.T("Controls", "Controles"));
@@ -499,12 +499,12 @@ namespace LGMonitorControl {
 
             status.Text = L.T("Ready. The monitor accepts writes but does not report its current value.", "Pronto. O monitor aceita escrita, mas não informa o valor atual.");
             status.AutoEllipsis = true;
-            status.ForeColor = Color.DimGray;
+            status.ForeColor = Color.FromArgb(160, 160, 160);
             status.Location = new Point(26, 640);
             status.Size = new Size(635, 24);
             status.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             Controls.Add(status);
-            LinkLabel author = new LinkLabel { Text = L.T("Developed by pbzin", "Desenvolvido por pbzin"), AutoSize = true, Location = new Point(510, 640), Anchor = AnchorStyles.Bottom | AnchorStyles.Right, LinkColor = accent };
+            LinkLabel author = new LinkLabel { Text = L.T("Developed by pbzin", "Desenvolvido por pbzin"), AutoSize = true, Location = new Point(510, 640), Anchor = AnchorStyles.Bottom | AnchorStyles.Right, LinkColor = Color.FromArgb(120, 120, 120), ActiveLinkColor = Color.FromArgb(170, 170, 170) };
             author.LinkClicked += delegate { OpenUrl("https://github.com/pbzin"); };
             Controls.Add(author); author.BringToFront();
             SetTheme(IsNightTheme());
@@ -676,18 +676,19 @@ namespace LGMonitorControl {
         }
 
         void BuildProfiles4(Control page) {
-            Panel panel = new Panel { Location = new Point(0, 0), Size = new Size(625, 475), AutoScroll = true };
+            Panel panel = new Panel { Location = new Point(0, 0), Size = new Size(625, 507), AutoScroll = false, BackColor = Color.FromArgb(32, 32, 32) };
             page.Controls.Add(panel);
             for (int i = 0; i < ProfileStore.Profiles.Length; i++) {
                 Profile p = ProfileStore.Profiles[i];
-                GroupBox box = new GroupBox { Text = L.T("Profile ", "Perfil ") + (i + 1), Location = new Point(14, 8 + i * 150), Size = new Size(580, 142), BackColor = Color.White };
+                Panel box = new Panel { Location = new Point(8, 4 + i * 112), Size = new Size(608, 106), BackColor = Color.FromArgb(40, 40, 40), Padding = new Padding(16) };
                 panel.Controls.Add(box);
+                box.Controls.Add(new Label { Text = L.T("Profile ", "Perfil ") + (i + 1), AutoSize = true, Font = new Font("Segoe UI", 10.5f, FontStyle.Bold), ForeColor = Color.White, Location = new Point(10, 5) });
                 profileName[i] = new TextBox { Text = p.Name, Width = 105 };
-                profileEnabled[i] = new CheckBox { Text = L.T("Active", "Ativo"), Checked = ProfileStore.Enabled[i], AutoSize = true, Location = new Point(492, 22) };
+                profileEnabled[i] = new CheckBox { Text = L.T("Active", "Ativo"), Checked = ProfileStore.Enabled[i], AutoSize = true, Location = new Point(520, 17) };
                 box.Controls.Add(profileEnabled[i]);
-                profileNightFilter[i] = new CheckBox { Text = L.T("Filter", "Filtro"), Checked = ProfileStore.NightFilterEnabled[i], AutoSize = true, Location = new Point(450, 50) };
+                profileNightFilter[i] = new CheckBox { Text = L.T("Filter", "Filtro"), Checked = ProfileStore.NightFilterEnabled[i], AutoSize = true, Location = new Point(385, 77) };
                 profileNightKelvin[i] = NewCombo(new object[] { "4000 K", "3000 K", "2500 K", "2000 K", "1500 K" });
-                profileNightKelvin[i].Width = 72; profileNightKelvin[i].Location = new Point(492, 47);
+                profileNightKelvin[i].Width = 72; profileNightKelvin[i].Location = new Point(445, 73);
                 int[] filterKelvins = { 4000, 3000, 2500, 2000, 1500 };
                 int filterSelection = Array.IndexOf(filterKelvins, ProfileStore.NightFilterKelvin[i]);
                 profileNightKelvin[i].SelectedIndex = filterSelection < 0 ? 1 : filterSelection;
@@ -695,20 +696,20 @@ namespace LGMonitorControl {
                 int filterIdx = i;
                 profileNightFilter[i].CheckedChanged += delegate { profileNightKelvin[filterIdx].Enabled = profileNightFilter[filterIdx].Checked; };
                 box.Controls.Add(profileNightFilter[i]); box.Controls.Add(profileNightKelvin[i]);
-                profileTime[i] = TimePicker(ProfileStore.Times[i]);
-                profileMode[i] = ProfileMode(p.Mode); profileMode[i].Width = 125;
-                profileTemp[i] = ProfileTemp(p.Temperature); profileTemp[i].Width = 105;
+                profileTime[i] = TimePicker(ProfileStore.Times[i]); profileTime[i].Width = 85;
+                profileMode[i] = ProfileMode(p.Mode); profileMode[i].Width = 110;
+                profileTemp[i] = ProfileTemp(p.Temperature); profileTemp[i].Width = 100;
                 profileGamma[i] = ProfileGamma(p.Gamma); profileGamma[i].Width = 92;
                 profileBrightness[i] = Number(p.Brightness); profileContrast[i] = Number(p.Contrast); profileSharpness[i] = Number(p.Sharpness);
                 profileRed[i] = Number(p.Red); profileGreen[i] = Number(p.Green); profileBlue[i] = Number(p.Blue);
-                AddSmall(box, L.T("Name", "Nome"), profileName[i], 10, 18); AddSmall(box, L.T("Starts", "Começa"), profileTime[i], 125, 18);
-                AddSmall(box, L.T("Mode", "Modo"), profileMode[i], 240, 18); AddSmall(box, L.T("Temperature", "Temperatura"), profileTemp[i], 375, 18);
+                AddSmall(box, L.T("Name", "Nome"), profileName[i], 10, 22); AddSmall(box, L.T("Starts", "Começa"), profileTime[i], 130, 22);
+                AddSmall(box, L.T("Mode", "Modo"), profileMode[i], 225, 22); AddSmall(box, L.T("Temperature", "Temperatura"), profileTemp[i], 350, 22);
                 profileBrightness[i].Width = profileContrast[i].Width = profileSharpness[i].Width = profileRed[i].Width = profileGreen[i].Width = profileBlue[i].Width = 48;
-                AddSmall(box, L.T("Bright.", "Brilho"), profileBrightness[i], 10, 72); AddSmall(box, L.T("Contrast", "Contr."), profileContrast[i], 67, 72);
-                AddSmall(box, L.T("Sharp.", "Nitidez"), profileSharpness[i], 124, 72); AddSmall(box, "Gamma", profileGamma[i], 181, 72);
-                AddSmall(box, "R", profileRed[i], 282, 72); AddSmall(box, "G", profileGreen[i], 339, 72); AddSmall(box, "B", profileBlue[i], 396, 72);
+                AddSmall(box, L.T("Bright.", "Brilho"), profileBrightness[i], 10, 64); AddSmall(box, L.T("Contrast", "Contr."), profileContrast[i], 67, 64);
+                AddSmall(box, L.T("Sharp.", "Nitidez"), profileSharpness[i], 124, 64); AddSmall(box, "Gamma", profileGamma[i], 181, 64);
+                AddSmall(box, "R", profileRed[i], 250, 64); AddSmall(box, "G", profileGreen[i], 290, 64); AddSmall(box, "B", profileBlue[i], 330, 64);
                 int idx = i;
-                Button apply = ButtonOf(L.T("Apply", "Aplicar"), 492, 96); apply.Size = new Size(70, 28);
+                Button apply = ButtonOf(L.T("Apply", "Aplicar"), 535, 72); apply.Size = new Size(65, 28);
                 apply.Click += delegate { SaveProfileValues4(); ApplyProfile(ProfileStore.Profiles[idx]); };
                 box.Controls.Add(apply);
                 profileMode[i].SelectedIndexChanged += delegate { UpdateProfileAvailability(profileMode[idx], profileContrast[idx], profileSharpness[idx], profileGamma[idx], profileTemp[idx], profileRed[idx], profileGreen[idx], profileBlue[idx]); UpdateRgbAvailability(profileMode[idx], profileTemp[idx], profileRed[idx], profileGreen[idx], profileBlue[idx]); };
@@ -716,7 +717,7 @@ namespace LGMonitorControl {
                 UpdateProfileAvailability(profileMode[i], profileContrast[i], profileSharpness[i], profileGamma[i], profileTemp[i], profileRed[i], profileGreen[i], profileBlue[i]);
                 UpdateRgbAvailability(profileMode[i], profileTemp[i], profileRed[i], profileGreen[i], profileBlue[i]);
             }
-            Button save = ButtonOf(L.T("Save and schedule", "Salvar e agendar"), 18, 485); save.Size = new Size(180, 36); save.BackColor = Color.FromArgb(190, 0, 55); save.ForeColor = Color.White;
+            Button save = ButtonOf(L.T("Save and schedule", "Salvar e agendar"), 18, 485); save.Size = new Size(180, 36); save.BackColor = Color.FromArgb(0, 120, 215); save.ForeColor = Color.White;
             save.Click += delegate { SaveProfilesAndSchedule4(); };
             page.Controls.Add(save);
             CheckBox allFilters = new CheckBox { Text = L.T("Filter all", "Filtro em todos"), AutoSize = true, Location = new Point(215, 494) };
@@ -783,8 +784,8 @@ namespace LGMonitorControl {
 
         void AddSmall(Control parent, string label, Control control, int x, int y) {
             parent.Controls.Add(new Label { Text = label, AutoSize = true, Location = new Point(x, y) });
-            control.BackColor = Color.White;
-            control.ForeColor = Color.FromArgb(30, 30, 34);
+            control.BackColor = Color.FromArgb(48, 49, 56);
+            control.ForeColor = Color.WhiteSmoke;
             control.Location = new Point(x, y + 22); parent.Controls.Add(control);
         }
 
@@ -929,7 +930,7 @@ namespace LGMonitorControl {
             }
             if (control is Button) {
                 Button button = (Button)control;
-                bool accentButton = button.BackColor.R > 130 && button.BackColor.G < 80 && button.BackColor.B < 100;
+                bool accentButton = (button.BackColor.R > 130 && button.BackColor.G < 80 && button.BackColor.B < 100) || (button.BackColor.R < 30 && button.BackColor.G > 90 && button.BackColor.B > 150);
                 if (!accentButton) { button.BackColor = dark ? Color.FromArgb(58, 59, 68) : Color.White; button.ForeColor = text; }
             }
             if (control is PictureBox) control.BackColor = dark ? Color.FromArgb(35, 36, 42) : Color.WhiteSmoke;
@@ -1141,7 +1142,11 @@ namespace LGMonitorControl {
         }
 
         Button ButtonOf(string text, int x, int y) {
-            return new Button { Text = text, Location = new Point(x, y), Size = new Size(165, 32), FlatStyle = FlatStyle.Flat, BackColor = Color.White };
+            Button button = new Button { Text = text, Location = new Point(x, y), Size = new Size(165, 32), FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(55, 55, 55), ForeColor = Color.White };
+            button.FlatAppearance.BorderSize = 0;
+            button.FlatAppearance.MouseOverBackColor = Color.FromArgb(70, 70, 70);
+            button.FlatAppearance.MouseDownBackColor = Color.FromArgb(45, 45, 45);
+            return button;
         }
 
         void ApplyTemperature(uint value, string description) {
@@ -1216,8 +1221,7 @@ namespace LGMonitorControl {
             }
             bool startup = args.Length == 1 && args[0] == "--startup";
             if (startup) ProfileStore.Apply(ProfileStore.Current());
-            // O tema visual nativo do WinForms força fundos brancos em ComboBox,
-            // DateTimePicker e NumericUpDown; o aplicativo aplica seu próprio tema.
+            Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.AddMessageFilter(new ProfileMouseWheelGuard());
             Application.Run(new MainForm(startup));
