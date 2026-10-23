@@ -449,6 +449,8 @@ namespace LGMonitorControl {
 
         [DllImport("dwmapi.dll")]
         static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+        [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
+        static extern int SetWindowTheme(IntPtr hwnd, string subAppName, string subIdList);
         ComboBox dayMode, nightMode, dayGamma, nightGamma, dayTemp, nightTemp;
         NumericUpDown dayBrightness, nightBrightness, dayContrast, nightContrast, daySharpness, nightSharpness, dayRed, dayGreen, dayBlue, nightRed, nightGreen, nightBlue;
         int row;
@@ -794,6 +796,12 @@ namespace LGMonitorControl {
 
         void AddSmall(Control parent, string label, Control control, int x, int y) {
             parent.Controls.Add(new Label { Text = label, AutoSize = true, Location = new Point(x, y) });
+            TextBox textBox = control as TextBox;
+            if (textBox != null) textBox.BorderStyle = BorderStyle.FixedSingle;
+            ComboBox combo = control as ComboBox;
+            if (combo != null) combo.FlatStyle = FlatStyle.Flat;
+            NumericUpDown number = control as NumericUpDown;
+            if (number != null) number.BorderStyle = BorderStyle.FixedSingle;
             control.BackColor = Color.FromArgb(48, 49, 56);
             control.ForeColor = Color.WhiteSmoke;
             control.Location = new Point(x, y + 22); parent.Controls.Add(control);
@@ -937,8 +945,10 @@ namespace LGMonitorControl {
             else if (control is TabControl || control is Panel || control is FlowLayoutPanel || control is TableLayoutPanel || control is ScrollableControl) control.BackColor = surface;
             if (control is Label || control is CheckBox || control is RadioButton) control.ForeColor = text;
             if (control is TextBox || control is ComboBox || control is NumericUpDown || control is DateTimePicker) {
+                if (control.IsHandleCreated) SetWindowTheme(control.Handle, "", "");
                 control.BackColor = control.Enabled ? field : (dark ? Color.FromArgb(42, 43, 48) : Color.FromArgb(235, 235, 238));
                 control.ForeColor = control.Enabled ? text : (dark ? Color.FromArgb(110, 110, 110) : Color.FromArgb(150, 150, 150));
+                control.Invalidate();
             }
             if (control is Button) {
                 Button button = (Button)control;
@@ -1234,7 +1244,8 @@ namespace LGMonitorControl {
             }
             bool startup = args.Length == 1 && args[0] == "--startup";
             if (startup) ProfileStore.Apply(ProfileStore.Current());
-            Application.EnableVisualStyles();
+            // Os controles nativos do WinForms ignoram BackColor no modo visual do Windows
+            // e voltam a ficar brancos; o tema é desenhado pelo próprio aplicativo.
             Application.SetCompatibleTextRenderingDefault(false);
             Application.AddMessageFilter(new ProfileMouseWheelGuard());
             Application.Run(new MainForm(startup));
