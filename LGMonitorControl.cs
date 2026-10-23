@@ -1165,7 +1165,7 @@ namespace LGMonitorControl {
 
             AddDonationBlock(page, "Pix ⚡", "5198a8b3-6b89-4475-aec1-5adcfcfd12cf", "brasil-badge.png", "https://raw.githubusercontent.com/pbzin/pbzin/main/assets/brasil-badge.png", 125, false);
             AddDonationBlock(page, "Bitcoin", "1GkpDZDHYov7WZLs54Nv19f2KUoZPcACs2", "bitcoin-qr.png", "https://raw.githubusercontent.com/pbzin/pbzin/main/assets/bitcoin-qr.png", 205);
-            AddDonationBlock(page, "Monero", "45YtYmxUeXeFdokKPG1KWtMFLByS8nwmtiJjEiZ9LfbkNaSUCvyWWAx3VmtDKKkxPJFdQLSXxodRWMt7EBu5TmA3Qi9dgwT", "monero-qr.png", "https://raw.githubusercontent.com/pbzin/pbzin/main/assets/monero-qr.png", 390);
+            AddDonationBlock(page, "Monero", "45YtYmxUeXeFdokKPG1KWtMFLByS8nwmtiJjEiZ9LfbkNaSUCvyWWAx3VmtDKKkxPJFdQLSXxodRWMt7EBu5TmA3Qi9dgwT", "monero-qr.png", "https://raw.githubusercontent.com/pbzin/pbzin/main/assets/monero-qr.png", 350);
         }
 
         void AddDonationBlock(Control page, string title, string address, string imageName, int y) {
@@ -1178,7 +1178,7 @@ namespace LGMonitorControl {
 
         void AddDonationBlock(Control page, string title, string address, string imageName, string imageUrl, int y, bool isQrCode) {
             Label heading = new Label { Text = title, Font = new Font("Segoe UI Semibold", 12F), AutoSize = true, Location = new Point(24, y) };
-            TextBox value = new TextBox { Text = address, ReadOnly = true, Location = new Point(24, y + 30), Width = imageName == null ? 440 : 330 };
+            TextBox value = new TextBox { Text = address, ReadOnly = true, BorderStyle = BorderStyle.None, Location = new Point(24, y + 30), Width = imageName == null ? 440 : 330, Height = 24, BackColor = Color.FromArgb(48, 49, 56), ForeColor = Color.WhiteSmoke };
             Button copy = ButtonOf(L.T("Copy", "Copiar"), imageName == null ? 475 : 365, y + 27); copy.Size = new Size(72, 29);
             copy.Click += delegate { try { Clipboard.SetText(address); status.Text = title + L.T(" copied.", " copiado."); } catch { } };
             page.Controls.Add(heading); page.Controls.Add(value); page.Controls.Add(copy);
@@ -1192,14 +1192,14 @@ namespace LGMonitorControl {
                 }
                 PictureBox qr = new PictureBox {
                     Location = new Point(455, isQrCode ? y - 5 : y + 5),
-                    Size = isQrCode ? new Size(135, 135) : new Size(110, 45),
+                    Size = isQrCode ? new Size(110, 110) : new Size(110, 45),
                     SizeMode = PictureBoxSizeMode.Zoom,
-                    BorderStyle = isQrCode ? BorderStyle.FixedSingle : BorderStyle.None
+                    BorderStyle = BorderStyle.None
                 };
                 if (File.Exists(path)) {
                     using (Image source = Image.FromFile(path)) qr.Image = new Bitmap(source);
                 } else {
-                    qr.BackColor = Color.WhiteSmoke;
+                    qr.BackColor = Color.FromArgb(40, 40, 40);
                 }
                 page.Controls.Add(qr);
             }
