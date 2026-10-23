@@ -373,6 +373,16 @@ namespace LGMonitorControl {
         }
     }
 
+    sealed class DarkTabControl : TabControl {
+        public DarkTabControl() {
+            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+            BackColor = Color.FromArgb(35, 36, 42);
+        }
+        protected override void OnPaintBackground(PaintEventArgs e) {
+            e.Graphics.Clear(Color.FromArgb(35, 36, 42));
+        }
+    }
+
     public sealed class MainForm : Form {
         readonly Label status = new Label();
         readonly Label headerTitle = new Label();
@@ -391,6 +401,7 @@ namespace LGMonitorControl {
         NumericUpDown[] profileBrightness = new NumericUpDown[4], profileContrast = new NumericUpDown[4], profileSharpness = new NumericUpDown[4], profileRed = new NumericUpDown[4], profileGreen = new NumericUpDown[4], profileBlue = new NumericUpDown[4];
         DateTimePicker dayTime, nightTime;
         TrackBar basicBrightness;
+        System.Windows.Forms.Timer themeTimer;
         ComboBox dayMode, nightMode, dayGamma, nightGamma, dayTemp, nightTemp;
         NumericUpDown dayBrightness, nightBrightness, dayContrast, nightContrast, daySharpness, nightSharpness, dayRed, dayGreen, dayBlue, nightRed, nightGreen, nightBlue;
         int row;
@@ -411,7 +422,7 @@ namespace LGMonitorControl {
             headerSubtitle.Text = L.T("Direct monitor control • write-only protocol", "Controle direto do monitor • protocolo somente escrita"); headerSubtitle.ForeColor = Color.DimGray; headerSubtitle.AutoSize = true; headerSubtitle.Location = new Point(28, 58);
             Controls.Add(headerTitle); Controls.Add(headerSubtitle);
 
-            TabControl tabs = new TabControl { Location = new Point(22, 88), Size = new Size(646, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, DrawMode = TabDrawMode.OwnerDrawFixed, ItemSize = new Size(105, 28), Padding = new Point(12, 4) };
+            TabControl tabs = new DarkTabControl { Location = new Point(22, 88), Size = new Size(646, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, DrawMode = TabDrawMode.OwnerDrawFixed, ItemSize = new Size(105, 28), Padding = new Point(12, 4) };
             tabs.DrawItem += delegate(object sender, DrawItemEventArgs e) {
                 TabControl tabsControl = (TabControl)sender;
                 bool selected = (e.State & DrawItemState.Selected) != 0;
@@ -451,6 +462,12 @@ namespace LGMonitorControl {
             SetTheme(IsNightTheme());
             InitializeTray();
             FormClosing += OnFormClosing;
+            Shown += delegate {
+                SetTheme(true);
+                themeTimer = new System.Windows.Forms.Timer { Interval = 250 };
+                themeTimer.Tick += delegate { SetTheme(true); themeTimer.Stop(); themeTimer.Dispose(); themeTimer = null; };
+                themeTimer.Start();
+            };
             if (startHidden) {
                 Shown += delegate { Hide(); ShowInTaskbar = false; };
             }
@@ -718,7 +735,7 @@ namespace LGMonitorControl {
         }
 
         DateTimePicker TimePicker(string value) {
-            DateTimePicker picker = new DateTimePicker { Format = DateTimePickerFormat.Custom, CustomFormat = "HH:mm", ShowUpDown = true, Width = 105 };
+            DateTimePicker picker = new DateTimePicker { Format = DateTimePickerFormat.Custom, CustomFormat = "HH:mm", ShowUpDown = true, Width = 105, CalendarMonthBackground = Color.FromArgb(48, 49, 56), CalendarTitleBackColor = Color.FromArgb(35, 36, 42), CalendarTitleForeColor = Color.WhiteSmoke };
             TimeSpan parsed; if (TimeSpan.TryParse(value, out parsed)) picker.Value = DateTime.Today.Add(parsed);
             return picker;
         }
@@ -1040,7 +1057,13 @@ namespace LGMonitorControl {
         }
 
         ComboBox NewCombo(object[] values) {
-            ComboBox box = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 205 };
+            ComboBox box = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, FlatStyle = FlatStyle.Flat, Width = 205, DrawMode = DrawMode.OwnerDrawFixed, BackColor = Color.FromArgb(48, 49, 56), ForeColor = Color.WhiteSmoke };
+            box.DrawItem += delegate(object sender, DrawItemEventArgs e) {
+                if (e.Index < 0) return;
+                e.DrawBackground();
+                using (Brush brush = new SolidBrush(Color.WhiteSmoke)) e.Graphics.DrawString(((ComboBox)sender).Items[e.Index].ToString(), e.Font, brush, e.Bounds);
+                e.DrawFocusRectangle();
+            };
             box.Items.AddRange(values); box.SelectedIndex = 0; return box;
         }
 
@@ -1054,7 +1077,7 @@ namespace LGMonitorControl {
         TrackBar AddSlider(Control page, string name, byte opcode, int min, int max, int initial, int wireOffset = 0) {
             int y = 24 + row * 68; row++;
             Label value = new Label { Text = initial.ToString(), AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Location = new Point(548, y + 4), Size = new Size(40, 25) };
-            TrackBar bar = new TrackBar { Minimum = min, Maximum = max, Value = initial, TickFrequency = 10, SmallChange = 1, LargeChange = 5, Location = new Point(210, y), Size = new Size(335, 45) };
+            TrackBar bar = new TrackBar { Minimum = min, Maximum = max, Value = initial, TickFrequency = 10, SmallChange = 1, LargeChange = 5, Location = new Point(210, y), Size = new Size(335, 45), BackColor = Color.FromArgb(35, 36, 42) };
             page.Controls.Add(new Label { Text = name, AutoSize = true, Location = new Point(20, y + 9) });
             bar.Scroll += delegate { value.Text = bar.Value.ToString(); Apply(opcode, (uint)(bar.Value + wireOffset), name + ": " + bar.Value); };
             bar.MouseUp += delegate { Apply(opcode, (uint)(bar.Value + wireOffset), name + ": " + bar.Value); };
