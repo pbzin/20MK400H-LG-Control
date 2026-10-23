@@ -397,7 +397,9 @@ namespace LGMonitorControl {
     sealed class DarkTimePicker : DateTimePicker {
         [DllImport("user32.dll", CharSet = CharSet.Auto)] static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string className, string title);
         [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam);
+        [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int command);
         const int EM_SETBKGNDCOLOR = 0x0443;
+        const int SW_HIDE = 0;
         protected override void OnHandleCreated(EventArgs e) {
             base.OnHandleCreated(e);
             IntPtr edit = FindWindowEx(Handle, IntPtr.Zero, "Edit", null);
@@ -426,7 +428,15 @@ namespace LGMonitorControl {
     }
 
     sealed class DarkNumericUpDown : NumericUpDown {
+        [DllImport("user32.dll", CharSet = CharSet.Auto)] static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string className, string title);
+        [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int command);
+        const int SW_HIDE = 0;
         public DarkNumericUpDown() { SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true); }
+        protected override void OnHandleCreated(EventArgs e) {
+            base.OnHandleCreated(e);
+            IntPtr spinner = FindWindowEx(Handle, IntPtr.Zero, "msctls_updown32", null);
+            if (spinner != IntPtr.Zero) ShowWindow(spinner, SW_HIDE);
+        }
         protected override void WndProc(ref Message m) {
             base.WndProc(ref m);
             if (m.Msg == 0x000F && IsHandleCreated) {
