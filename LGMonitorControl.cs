@@ -411,7 +411,17 @@ namespace LGMonitorControl {
             headerSubtitle.Text = L.T("Direct monitor control • write-only protocol", "Controle direto do monitor • protocolo somente escrita"); headerSubtitle.ForeColor = Color.DimGray; headerSubtitle.AutoSize = true; headerSubtitle.Location = new Point(28, 58);
             Controls.Add(headerTitle); Controls.Add(headerSubtitle);
 
-            TabControl tabs = new TabControl { Location = new Point(22, 88), Size = new Size(646, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
+            TabControl tabs = new TabControl { Location = new Point(22, 88), Size = new Size(646, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, DrawMode = TabDrawMode.OwnerDrawFixed, ItemSize = new Size(105, 28), Padding = new Point(12, 4) };
+            tabs.DrawItem += delegate(object sender, DrawItemEventArgs e) {
+                TabControl tabsControl = (TabControl)sender;
+                bool selected = (e.State & DrawItemState.Selected) != 0;
+                Color background = selected ? Color.FromArgb(190, 0, 55) : Color.FromArgb(48, 49, 56);
+                using (Brush brush = new SolidBrush(background)) e.Graphics.FillRectangle(brush, e.Bounds);
+                using (Brush brush = new SolidBrush(Color.WhiteSmoke)) {
+                    StringFormat format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                    e.Graphics.DrawString(tabsControl.TabPages[e.Index].Text, Font, brush, e.Bounds, format);
+                }
+            };
             TabPage profiles = new TabPage(L.T("Profiles", "Perfis"));
             TabPage basic = new TabPage(L.T("Controls", "Controles"));
             TabPage color = new TabPage(L.T("Color", "Cor"));
