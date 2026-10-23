@@ -836,7 +836,12 @@ namespace LGMonitorControl {
             Color field = dark ? Color.FromArgb(48, 49, 56) : Color.White;
             Color text = dark ? Color.WhiteSmoke : Color.FromArgb(35, 35, 40);
             if (control == this) control.BackColor = surface;
-            if (control is TabControl || control is TabPage || control is Panel || control is GroupBox || control is FlowLayoutPanel || control is TableLayoutPanel || control is ScrollableControl) control.BackColor = surface;
+            if (control is TabPage) {
+                TabPage tab = (TabPage)control;
+                tab.UseVisualStyleBackColor = false;
+                tab.BackColor = surface;
+            }
+            if (control is TabControl || control is Panel || control is GroupBox || control is FlowLayoutPanel || control is TableLayoutPanel || control is ScrollableControl) control.BackColor = surface;
             if (control is Label || control is GroupBox || control is CheckBox || control is RadioButton) control.ForeColor = text;
             if (control is TextBox || control is ComboBox || control is NumericUpDown || control is DateTimePicker) {
                 control.BackColor = field; control.ForeColor = text;
