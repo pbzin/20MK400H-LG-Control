@@ -589,17 +589,6 @@ namespace LGMonitorControl {
             Controls.Add(headerTitle); Controls.Add(headerSubtitle);
 
             TabControl tabs = new DarkTabControl { Location = new Point(22, 88), Size = new Size(856, 535), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, DrawMode = TabDrawMode.OwnerDrawFixed, SizeMode = TabSizeMode.Fixed, Appearance = TabAppearance.FlatButtons, ItemSize = new Size(130, 36), Padding = new Point(0, 0) };
-            tabs.DrawItem += delegate(object sender, DrawItemEventArgs e) {
-                TabControl tabsControl = (TabControl)sender;
-                bool selected = (e.State & DrawItemState.Selected) != 0;
-                Color background = selected ? Color.FromArgb(45, 45, 45) : Color.FromArgb(32, 32, 32);
-                using (Brush brush = new SolidBrush(background)) e.Graphics.FillRectangle(brush, e.Bounds);
-                using (Brush brush = new SolidBrush(selected ? Color.White : Color.FromArgb(170, 170, 170))) {
-                    StringFormat format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-                    e.Graphics.DrawString(tabsControl.TabPages[e.Index].Text, Font, brush, e.Bounds, format);
-                }
-                if (selected) using (Brush brush = new SolidBrush(Color.FromArgb(0, 120, 215))) e.Graphics.FillRectangle(brush, new Rectangle(e.Bounds.X, e.Bounds.Bottom - 2, e.Bounds.Width, 2));
-            };
             TabPage profiles = new TabPage(L.T("Profiles", "Perfis"));
             TabPage basic = new TabPage(L.T("Controls", "Controles"));
             TabPage color = new TabPage(L.T("Color", "Cor"));
