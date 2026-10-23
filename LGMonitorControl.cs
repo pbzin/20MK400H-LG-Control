@@ -715,6 +715,17 @@ namespace LGMonitorControl {
             ProfileStore.Save();
         }
 
+        bool ScheduledProfilesExist() {
+            try {
+                ProcessStartInfo info = new ProcessStartInfo("powershell.exe", "-NoProfile -Command \"@(Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object TaskName -Like 'LG Monitor - Perfil *').Count\"");
+                info.UseShellExecute = false; info.CreateNoWindow = true; info.RedirectStandardOutput = true;
+                using (Process process = Process.Start(info)) {
+                    string output = process.StandardOutput.ReadToEnd(); process.WaitForExit(5000);
+                    int count; return int.TryParse(output.Trim(), out count) && count > 0;
+                }
+            } catch { return false; }
+        }
+
         void SaveProfilesAndSchedule4() {
             try {
                 SaveProfileValues4();
@@ -727,7 +738,7 @@ namespace LGMonitorControl {
                 ProcessStartInfo info = new ProcessStartInfo("powershell.exe", args);
                 info.Verb = "runas"; info.UseShellExecute = true;
                 Process process = Process.Start(info); process.WaitForExit();
-                if (process.ExitCode != 0) throw new InvalidOperationException("O Agendador retornou " + process.ExitCode + ".");
+                if (process.ExitCode != 0 && !ScheduledProfilesExist()) throw new InvalidOperationException("O Agendador retornou " + process.ExitCode + ".");
                 int activeIndex = ProfileStore.CurrentIndex();
                 ProfileStore.Apply(ProfileStore.Profiles[activeIndex]);
                 SetTheme(activeIndex >= 2);
@@ -761,7 +772,7 @@ namespace LGMonitorControl {
                 string script = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "install-lg-monitor-schedule.ps1");
                 ProcessStartInfo info = new ProcessStartInfo("powershell.exe", "-NoProfile -ExecutionPolicy Bypass -File \"" + script + "\" -DayTime \"" + ProfileStore.DayTime + "\" -NightTime \"" + ProfileStore.NightTime + "\"");
                 info.Verb = "runas"; info.UseShellExecute = true; Process process = Process.Start(info); process.WaitForExit();
-                if (process.ExitCode != 0) throw new InvalidOperationException("O Agendador retornou " + process.ExitCode + ".");
+                if (process.ExitCode != 0 && !ScheduledProfilesExist()) throw new InvalidOperationException("O Agendador retornou " + process.ExitCode + ".");
                 Profile active = ProfileStore.Current();
                 ProfileStore.Apply(active);
                 SetTheme(active == ProfileStore.Night);
