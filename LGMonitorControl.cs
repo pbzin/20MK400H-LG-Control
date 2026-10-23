@@ -402,6 +402,25 @@ namespace LGMonitorControl {
         }
     }
 
+    sealed class DarkMenuColorTable : ProfessionalColorTable {
+        readonly Color background = Color.FromArgb(36, 36, 36);
+        readonly Color hover = Color.FromArgb(50, 50, 50);
+        readonly Color separator = Color.FromArgb(55, 55, 55);
+        public override Color ToolStripDropDownBackground { get { return background; } }
+        public override Color MenuBorder { get { return background; } }
+        public override Color MenuItemSelected { get { return hover; } }
+        public override Color MenuItemBorder { get { return Color.Transparent; } }
+        public override Color ImageMarginGradientBegin { get { return background; } }
+        public override Color ImageMarginGradientMiddle { get { return background; } }
+        public override Color ImageMarginGradientEnd { get { return background; } }
+        public override Color SeparatorDark { get { return separator; } }
+        public override Color SeparatorLight { get { return separator; } }
+    }
+
+    sealed class DarkMenuRenderer : ToolStripProfessionalRenderer {
+        public DarkMenuRenderer() : base(new DarkMenuColorTable()) { }
+    }
+
     public sealed class MainForm : Form {
         readonly Label status = new Label();
         readonly Label headerTitle = new Label();
@@ -421,6 +440,16 @@ namespace LGMonitorControl {
         DateTimePicker dayTime, nightTime;
         TrackBar basicBrightness;
         System.Windows.Forms.Timer themeTimer;
+
+        protected override void OnHandleCreated(EventArgs e) {
+            base.OnHandleCreated(e);
+            int darkMode = 1;
+            if (DwmSetWindowAttribute(Handle, 20, ref darkMode, sizeof(int)) != 0)
+                DwmSetWindowAttribute(Handle, 19, ref darkMode, sizeof(int));
+        }
+
+        [DllImport("dwmapi.dll")]
+        static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
         ComboBox dayMode, nightMode, dayGamma, nightGamma, dayTemp, nightTemp;
         NumericUpDown dayBrightness, nightBrightness, dayContrast, nightContrast, daySharpness, nightSharpness, dayRed, dayGreen, dayBlue, nightRed, nightGreen, nightBlue;
         int row;
@@ -534,6 +563,11 @@ namespace LGMonitorControl {
 
         void InitializeTray() {
             ContextMenuStrip menu = new ContextMenuStrip();
+            menu.Renderer = new DarkMenuRenderer();
+            menu.ShowImageMargin = false;
+            menu.BackColor = Color.FromArgb(36, 36, 36);
+            menu.ForeColor = Color.White;
+            menu.Font = new Font("Segoe UI", 9.5f, FontStyle.Regular);
             ToolStripMenuItem open = new ToolStripMenuItem(L.T("Open LG Monitor Control", "Abrir LG Monitor Control"));
             activeProfileItem = new ToolStripMenuItem(); activeProfileItem.Enabled = false;
             UpdateActiveProfileMenuText();
@@ -1182,7 +1216,8 @@ namespace LGMonitorControl {
             }
             bool startup = args.Length == 1 && args[0] == "--startup";
             if (startup) ProfileStore.Apply(ProfileStore.Current());
-            Application.EnableVisualStyles();
+            // O tema visual nativo do WinForms força fundos brancos em ComboBox,
+            // DateTimePicker e NumericUpDown; o aplicativo aplica seu próprio tema.
             Application.SetCompatibleTextRenderingDefault(false);
             Application.AddMessageFilter(new ProfileMouseWheelGuard());
             Application.Run(new MainForm(startup));
