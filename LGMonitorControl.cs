@@ -507,7 +507,7 @@ namespace LGMonitorControl {
             LinkLabel author = new LinkLabel { Text = L.T("Developed by pbzin", "Desenvolvido por pbzin"), AutoSize = true, Location = new Point(510, 640), Anchor = AnchorStyles.Bottom | AnchorStyles.Right, LinkColor = Color.FromArgb(120, 120, 120), ActiveLinkColor = Color.FromArgb(170, 170, 170) };
             author.LinkClicked += delegate { OpenUrl("https://github.com/pbzin"); };
             Controls.Add(author); author.BringToFront();
-            SetTheme(IsNightTheme());
+            SetTheme(true);
             InitializeTray();
             FormClosing += OnFormClosing;
             Shown += delegate {
@@ -629,7 +629,7 @@ namespace LGMonitorControl {
                 ProfileStore.Save();
                 int index = ProfileStore.CurrentIndex();
                 ProfileStore.Apply(ProfileStore.Profiles[index]);
-                SetTheme(IsNightTheme());
+                SetTheme(true);
                 UpdatePauseMenuText();
                 UpdateActiveProfileMenuText();
                 status.ForeColor = Color.FromArgb(25, 115, 55);
@@ -680,7 +680,7 @@ namespace LGMonitorControl {
             page.Controls.Add(panel);
             for (int i = 0; i < ProfileStore.Profiles.Length; i++) {
                 Profile p = ProfileStore.Profiles[i];
-                Panel box = new Panel { Location = new Point(8, 4 + i * 112), Size = new Size(608, 106), BackColor = Color.FromArgb(40, 40, 40), Padding = new Padding(16) };
+                Panel box = new Panel { Location = new Point(8, 4 + i * 112), Size = new Size(608, 106), BackColor = Color.FromArgb(40, 40, 40), Padding = new Padding(16), Tag = "card" };
                 panel.Controls.Add(box);
                 box.Controls.Add(new Label { Text = L.T("Profile ", "Perfil ") + (i + 1), AutoSize = true, Font = new Font("Segoe UI", 10.5f, FontStyle.Bold), ForeColor = Color.White, Location = new Point(10, 5) });
                 profileName[i] = new TextBox { Text = p.Name, Width = 105 };
@@ -886,7 +886,7 @@ namespace LGMonitorControl {
         }
 
         void ApplyProfile(Profile profile) {
-            try { ProfileStore.Apply(profile); UpdateActiveProfileMenuText(); SetTheme(IsNightTheme()); status.ForeColor = Color.FromArgb(25, 115, 55); status.Text = "✓ Perfil " + profile.Name + " aplicado."; }
+            try { ProfileStore.Apply(profile); UpdateActiveProfileMenuText(); SetTheme(true); status.ForeColor = Color.FromArgb(25, 115, 55); status.Text = "✓ Perfil " + profile.Name + " aplicado."; }
             catch (Exception ex) { status.ForeColor = accent; status.Text = "Falha: " + ex.Message; }
         }
 
@@ -899,7 +899,7 @@ namespace LGMonitorControl {
                 if (process.ExitCode != 0 && !ScheduledProfilesExist()) throw new InvalidOperationException("O Agendador retornou " + process.ExitCode + ".");
                 Profile active = ProfileStore.Current();
                 ProfileStore.Apply(active);
-                SetTheme(IsNightTheme());
+                SetTheme(true);
                 status.ForeColor = Color.FromArgb(25, 115, 55); status.Text = "✓ Perfis salvos: Dia " + ProfileStore.DayTime + " • Noite " + ProfileStore.NightTime;
             } catch (Exception ex) { status.ForeColor = accent; status.Text = "Falha ao agendar: " + ex.Message; }
         }
@@ -933,10 +933,12 @@ namespace LGMonitorControl {
                 tab.UseVisualStyleBackColor = false;
                 tab.BackColor = surface;
             }
-            if (control is TabControl || control is Panel || control is FlowLayoutPanel || control is TableLayoutPanel || control is ScrollableControl) control.BackColor = surface;
+            if (control is Panel && Equals(control.Tag, "card")) control.BackColor = dark ? Color.FromArgb(40, 40, 40) : Color.White;
+            else if (control is TabControl || control is Panel || control is FlowLayoutPanel || control is TableLayoutPanel || control is ScrollableControl) control.BackColor = surface;
             if (control is Label || control is CheckBox || control is RadioButton) control.ForeColor = text;
             if (control is TextBox || control is ComboBox || control is NumericUpDown || control is DateTimePicker) {
-                control.BackColor = field; control.ForeColor = text;
+                control.BackColor = control.Enabled ? field : (dark ? Color.FromArgb(42, 43, 48) : Color.FromArgb(235, 235, 238));
+                control.ForeColor = control.Enabled ? text : (dark ? Color.FromArgb(110, 110, 110) : Color.FromArgb(150, 150, 150));
             }
             if (control is Button) {
                 Button button = (Button)control;
