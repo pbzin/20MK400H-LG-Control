@@ -814,14 +814,31 @@ namespace LGMonitorControl {
 
         void SetTheme(bool dark) {
             BackColor = dark ? Color.FromArgb(28, 29, 33) : Color.FromArgb(245, 245, 247);
-            // As páginas e campos continuam claros; manter a cor-base escura evita
-            // texto branco sobre ComboBox/NumericUpDown brancos.
-            ForeColor = Color.FromArgb(35, 35, 40);
+            ForeColor = dark ? Color.WhiteSmoke : Color.FromArgb(35, 35, 40);
+            ApplyControlTheme(this, dark);
             headerTitle.ForeColor = dark ? Color.WhiteSmoke : Color.FromArgb(35, 35, 40);
             headerSubtitle.ForeColor = dark ? Color.Silver : Color.DimGray;
             if (trayIcon.Visible) {
                 Icon old = trayIcon.Icon; trayIcon.Icon = TrayIconFor(dark); if (old != null) old.Dispose();
             }
+        }
+
+        void ApplyControlTheme(Control control, bool dark) {
+            Color surface = dark ? Color.FromArgb(35, 36, 42) : Color.FromArgb(245, 245, 247);
+            Color field = dark ? Color.FromArgb(48, 49, 56) : Color.White;
+            Color text = dark ? Color.WhiteSmoke : Color.FromArgb(35, 35, 40);
+            if (control == this) control.BackColor = surface;
+            if (control is TabPage || control is Panel || control is GroupBox || control is FlowLayoutPanel) control.BackColor = surface;
+            if (control is Label || control is GroupBox || control is CheckBox || control is RadioButton) control.ForeColor = text;
+            if (control is TextBox || control is ComboBox || control is NumericUpDown || control is DateTimePicker) {
+                control.BackColor = field; control.ForeColor = text;
+            }
+            if (control is Button) {
+                Button button = (Button)control;
+                bool accentButton = button.BackColor.R > 130 && button.BackColor.G < 80 && button.BackColor.B < 100;
+                if (!accentButton) { button.BackColor = dark ? Color.FromArgb(58, 59, 68) : Color.White; button.ForeColor = text; }
+            }
+            foreach (Control child in control.Controls) ApplyControlTheme(child, dark);
         }
 
         Icon TrayIconFor(bool dark) {
