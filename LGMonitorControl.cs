@@ -1057,7 +1057,7 @@ namespace LGMonitorControl {
         }
 
         ComboBox NewCombo(object[] values) {
-            ComboBox box = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, FlatStyle = FlatStyle.Flat, Width = 205, DrawMode = DrawMode.OwnerDrawFixed, BackColor = Color.FromArgb(48, 49, 56), ForeColor = Color.WhiteSmoke };
+            ComboBox box = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, FlatStyle = FlatStyle.Popup, Width = 205, DrawMode = DrawMode.OwnerDrawFixed, BackColor = Color.FromArgb(48, 49, 56), ForeColor = Color.WhiteSmoke };
             box.DrawItem += delegate(object sender, DrawItemEventArgs e) {
                 if (e.Index < 0) return;
                 e.DrawBackground();
