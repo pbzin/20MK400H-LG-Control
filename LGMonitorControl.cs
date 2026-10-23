@@ -8,6 +8,7 @@ using Microsoft.Win32;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Text;
 using System.Windows.Forms;
 
 namespace LGMonitorControl {
@@ -381,6 +382,7 @@ namespace LGMonitorControl {
         protected override void OnPaintBackground(PaintEventArgs e) {
             e.Graphics.Clear(Color.FromArgb(35, 36, 42));
         }
+        protected override void OnHandleCreated(EventArgs e) { base.OnHandleCreated(e); NativeChildHider.HideScrollChildren(Handle); }
         protected override void OnPaint(PaintEventArgs e) {
             e.Graphics.Clear(Color.FromArgb(32, 32, 32));
             int width = ItemSize.Width;
@@ -428,8 +430,7 @@ namespace LGMonitorControl {
         public DarkNumericUpDown() { SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true); }
         protected override void OnHandleCreated(EventArgs e) {
             base.OnHandleCreated(e);
-            IntPtr spinner = FindWindowEx(Handle, IntPtr.Zero, "msctls_updown32", null);
-            if (spinner != IntPtr.Zero) ShowWindow(spinner, SW_HIDE);
+            NativeChildHider.HideScrollChildren(Handle);
         }
         protected override void WndProc(ref Message m) {
             base.WndProc(ref m);
@@ -451,6 +452,22 @@ namespace LGMonitorControl {
             TextRenderer.DrawText(e.Graphics, Text, Font, new Rectangle(4, 0, Width - 22, Height), foreground, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
             using (Brush brush = new SolidBrush(Color.FromArgb(70, 70, 78))) e.Graphics.FillRectangle(brush, Width - 20, 0, 20, Height);
             using (Pen pen = new Pen(foreground, 1)) { e.Graphics.DrawLine(pen, Width - 14, Height / 2 - 3, Width - 10, Height / 2 - 3); e.Graphics.DrawLine(pen, Width - 14, Height / 2 + 3, Width - 10, Height / 2 + 3); }
+        }
+    }
+
+    static class NativeChildHider {
+        [DllImport("user32.dll")] static extern bool EnumChildWindows(IntPtr parent, EnumChildProc callback, IntPtr data);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr hwnd, StringBuilder text, int max);
+        [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int command);
+        delegate bool EnumChildProc(IntPtr hwnd, IntPtr data);
+        const int SW_HIDE = 0;
+        public static void HideScrollChildren(IntPtr parent) {
+            EnumChildWindows(parent, delegate(IntPtr hwnd, IntPtr data) {
+                StringBuilder name = new StringBuilder(64); GetClassName(hwnd, name, name.Capacity);
+                string type = name.ToString().ToLowerInvariant();
+                if (type.Contains("updown") || type.Contains("scrollbar")) ShowWindow(hwnd, SW_HIDE);
+                return true;
+            }, IntPtr.Zero);
         }
     }
 
