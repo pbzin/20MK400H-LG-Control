@@ -508,7 +508,7 @@ namespace LGMonitorControl {
             }
             menu.Items.Add(new ToolStripSeparator()); menu.Items.Add(exit);
             menu.Opening += delegate { UpdateActiveProfileMenuText(); };
-            trayIcon.Icon = SystemIcons.Application;
+            trayIcon.Icon = TrayIconFor(ProfileStore.CurrentIndex() >= 2);
             trayIcon.Text = "LG 20MK400H Control";
             trayIcon.ContextMenuStrip = menu;
             trayIcon.Visible = true;
@@ -819,6 +819,23 @@ namespace LGMonitorControl {
             ForeColor = Color.FromArgb(35, 35, 40);
             headerTitle.ForeColor = dark ? Color.WhiteSmoke : Color.FromArgb(35, 35, 40);
             headerSubtitle.ForeColor = dark ? Color.Silver : Color.DimGray;
+            if (trayIcon.Visible) {
+                Icon old = trayIcon.Icon; trayIcon.Icon = TrayIconFor(dark); if (old != null) old.Dispose();
+            }
+        }
+
+        Icon TrayIconFor(bool dark) {
+            using (Bitmap bitmap = new Bitmap(16, 16)) {
+                using (Graphics g = Graphics.FromImage(bitmap)) {
+                    g.Clear(Color.Transparent);
+                    using (Brush body = new SolidBrush(dark ? Color.WhiteSmoke : Color.FromArgb(70, 70, 78)))
+                    using (Pen edge = new Pen(dark ? Color.FromArgb(70, 70, 78) : Color.WhiteSmoke, 1)) {
+                        g.FillRectangle(body, 2, 3, 12, 8); g.DrawRectangle(edge, 2, 3, 11, 7);
+                        g.FillRectangle(body, 6, 12, 4, 2); g.FillRectangle(body, 4, 14, 8, 1);
+                    }
+                }
+                return (Icon)Icon.FromHandle(bitmap.GetHicon()).Clone();
+            }
         }
 
         void BuildBasic(Control page) {
