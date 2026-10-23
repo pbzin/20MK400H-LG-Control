@@ -383,6 +383,14 @@ namespace LGMonitorControl {
         }
     }
 
+    static class WindowChrome {
+        [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+        public static void ApplyDarkTitleBar(Form form) {
+            try { int enabled = 1; DwmSetWindowAttribute(form.Handle, 20, ref enabled, sizeof(int)); DwmSetWindowAttribute(form.Handle, 19, ref enabled, sizeof(int)); }
+            catch { }
+        }
+    }
+
     public sealed class MainForm : Form {
         readonly Label status = new Label();
         readonly Label headerTitle = new Label();
@@ -464,6 +472,7 @@ namespace LGMonitorControl {
             FormClosing += OnFormClosing;
             Shown += delegate {
                 SetTheme(true);
+                WindowChrome.ApplyDarkTitleBar(this);
                 themeTimer = new System.Windows.Forms.Timer { Interval = 250 };
                 themeTimer.Tick += delegate { SetTheme(true); themeTimer.Stop(); themeTimer.Dispose(); themeTimer = null; };
                 themeTimer.Start();
