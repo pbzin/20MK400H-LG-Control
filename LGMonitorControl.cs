@@ -436,6 +436,19 @@ namespace LGMonitorControl {
         }
     }
 
+    sealed class DarkTrackBar : TrackBar {
+        public DarkTrackBar() { SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true); }
+        protected override void OnPaint(PaintEventArgs e) {
+            e.Graphics.Clear(Color.FromArgb(35, 36, 42));
+            int left = 4, right = Width - 4, center = Height / 2;
+            using (Pen track = new Pen(Color.FromArgb(80, 80, 88), 4)) e.Graphics.DrawLine(track, left, center, right, center);
+            int position = left + (int)((right - left) * (Value - Minimum) / (double)(Maximum - Minimum));
+            using (Pen active = new Pen(Color.FromArgb(0, 120, 215), 4)) e.Graphics.DrawLine(active, left, center, position, center);
+            using (Brush thumb = new SolidBrush(Color.FromArgb(0, 120, 215))) e.Graphics.FillRectangle(thumb, position - 5, center - 8, 10, 16);
+            using (Pen edge = new Pen(Color.FromArgb(170, 170, 170))) e.Graphics.DrawRectangle(edge, position - 5, center - 8, 10, 16);
+        }
+    }
+
     sealed class DarkNumericUpDown : NumericUpDown {
         [DllImport("user32.dll", CharSet = CharSet.Auto)] static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string className, string title);
         [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int command);
@@ -1255,7 +1268,7 @@ namespace LGMonitorControl {
         TrackBar AddSlider(Control page, string name, byte opcode, int min, int max, int initial, int wireOffset = 0) {
             int y = 24 + row * 68; row++;
             Label value = new Label { Text = initial.ToString(), AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Location = new Point(548, y + 4), Size = new Size(40, 25) };
-            TrackBar bar = new TrackBar { Minimum = min, Maximum = max, Value = initial, TickFrequency = 10, SmallChange = 1, LargeChange = 5, Location = new Point(210, y), Size = new Size(335, 45), BackColor = Color.FromArgb(35, 36, 42) };
+            TrackBar bar = new DarkTrackBar { Minimum = min, Maximum = max, Value = initial, TickFrequency = 10, SmallChange = 1, LargeChange = 5, Location = new Point(210, y), Size = new Size(335, 45), BackColor = Color.FromArgb(35, 36, 42) };
             page.Controls.Add(new Label { Text = name, AutoSize = true, Location = new Point(20, y + 9) });
             bar.Scroll += delegate { value.Text = bar.Value.ToString(); Apply(opcode, (uint)(bar.Value + wireOffset), name + ": " + bar.Value); };
             bar.MouseUp += delegate { Apply(opcode, (uint)(bar.Value + wireOffset), name + ": " + bar.Value); };
