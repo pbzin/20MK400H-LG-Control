@@ -438,7 +438,7 @@ namespace LGMonitorControl {
             LinkLabel author = new LinkLabel { Text = L.T("Developed by pbzin", "Desenvolvido por pbzin"), AutoSize = true, Location = new Point(510, 640), Anchor = AnchorStyles.Bottom | AnchorStyles.Right, LinkColor = accent };
             author.LinkClicked += delegate { OpenUrl("https://github.com/pbzin"); };
             Controls.Add(author); author.BringToFront();
-            SetTheme(ProfileStore.CurrentIndex() >= 2);
+            SetTheme(IsNightTheme());
             InitializeTray();
             FormClosing += OnFormClosing;
             if (startHidden) {
@@ -548,7 +548,7 @@ namespace LGMonitorControl {
                 ProfileStore.Save();
                 int index = ProfileStore.CurrentIndex();
                 ProfileStore.Apply(ProfileStore.Profiles[index]);
-                SetTheme(index >= 2);
+                SetTheme(IsNightTheme());
                 UpdatePauseMenuText();
                 UpdateActiveProfileMenuText();
                 status.ForeColor = Color.FromArgb(25, 115, 55);
@@ -773,7 +773,7 @@ namespace LGMonitorControl {
                 if (process.ExitCode != 0 && !ScheduledProfilesExist()) throw new InvalidOperationException("O Agendador retornou " + process.ExitCode + ".");
                 int activeIndex = ProfileStore.CurrentIndex();
                 ProfileStore.Apply(ProfileStore.Profiles[activeIndex]);
-                SetTheme(activeIndex >= 2);
+                SetTheme(IsNightTheme());
                 status.ForeColor = Color.FromArgb(25, 115, 55);
                 status.Text = "✓ Quatro perfis salvos e agendados.";
             } catch (Exception ex) { status.ForeColor = accent; status.Text = "Falha ao agendar: " + ex.Message; }
@@ -794,7 +794,7 @@ namespace LGMonitorControl {
         }
 
         void ApplyProfile(Profile profile) {
-            try { ProfileStore.Apply(profile); UpdateActiveProfileMenuText(); status.ForeColor = Color.FromArgb(25, 115, 55); status.Text = "✓ Perfil " + profile.Name + " aplicado."; SetTheme(Array.IndexOf(ProfileStore.Profiles, profile) >= 2); }
+            try { ProfileStore.Apply(profile); UpdateActiveProfileMenuText(); SetTheme(IsNightTheme()); status.ForeColor = Color.FromArgb(25, 115, 55); status.Text = "✓ Perfil " + profile.Name + " aplicado."; }
             catch (Exception ex) { status.ForeColor = accent; status.Text = "Falha: " + ex.Message; }
         }
 
@@ -807,7 +807,7 @@ namespace LGMonitorControl {
                 if (process.ExitCode != 0 && !ScheduledProfilesExist()) throw new InvalidOperationException("O Agendador retornou " + process.ExitCode + ".");
                 Profile active = ProfileStore.Current();
                 ProfileStore.Apply(active);
-                SetTheme(active == ProfileStore.Night);
+                SetTheme(IsNightTheme());
                 status.ForeColor = Color.FromArgb(25, 115, 55); status.Text = "✓ Perfis salvos: Dia " + ProfileStore.DayTime + " • Noite " + ProfileStore.NightTime;
             } catch (Exception ex) { status.ForeColor = accent; status.Text = "Falha ao agendar: " + ex.Message; }
         }
@@ -821,6 +821,11 @@ namespace LGMonitorControl {
             if (trayIcon.Visible) {
                 Icon old = trayIcon.Icon; trayIcon.Icon = TrayIconFor(dark); if (old != null) old.Dispose();
             }
+        }
+
+        bool IsNightTheme() {
+            int index = ProfileStore.CurrentIndex();
+            return index >= 2 || (index >= 0 && ProfileStore.NightFilterEnabled[index] && !ProfileStore.FilterPaused);
         }
 
         void ApplyControlTheme(Control control, bool dark) {
