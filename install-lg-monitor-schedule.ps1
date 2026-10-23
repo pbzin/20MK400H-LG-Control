@@ -14,7 +14,7 @@ try {
     if (-not (Test-Path -LiteralPath $controller -PathType Leaf)) { throw "LGMonitorControl.exe nao foi encontrado em $PSScriptRoot" }
     # Compatibilidade com a tela antiga de dois perfis.
     if ($DayTime) { $Profile1Time = $DayTime; $Profile1Enabled = 1 }
-    if ($NightTime) { $Profile2Time = $NightTime; $Profile2Enabled = 1 }
+    if ($NightTime) { $Profile3Time = $NightTime; $Profile3Enabled = 1; $Profile2Enabled = 0 }
     $times = @($Profile1Time, $Profile2Time, $Profile3Time, $Profile4Time)
     $enabled = @($Profile1Enabled, $Profile2Enabled, $Profile3Enabled, $Profile4Enabled)
     $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable
