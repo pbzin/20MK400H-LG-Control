@@ -391,6 +391,51 @@ namespace LGMonitorControl {
             IntPtr edit = FindWindowEx(Handle, IntPtr.Zero, "Edit", null);
             if (edit != IntPtr.Zero) SendMessage(edit, EM_SETBKGNDCOLOR, IntPtr.Zero, new IntPtr(Color.FromArgb(48, 49, 56).ToArgb() & 0x00FFFFFF));
         }
+        protected override void OnPaint(PaintEventArgs e) {
+            e.Graphics.Clear(Color.FromArgb(48, 49, 56));
+            TextRenderer.DrawText(e.Graphics, Value.ToString("HH:mm"), Font, new Rectangle(4, 0, Width - 22, Height), Enabled ? Color.WhiteSmoke : Color.FromArgb(110, 110, 110), TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+            using (Brush brush = new SolidBrush(Color.FromArgb(70, 70, 78))) e.Graphics.FillRectangle(brush, Width - 20, 0, 20, Height);
+            using (Pen pen = new Pen(Color.WhiteSmoke, 1)) { e.Graphics.DrawLine(pen, Width - 14, Height / 2 - 2, Width - 10, Height / 2 - 2); e.Graphics.DrawLine(pen, Width - 14, Height / 2 + 2, Width - 10, Height / 2 + 2); }
+        }
+    }
+
+    sealed class DarkComboBox : ComboBox {
+        public DarkComboBox() { SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true); }
+        protected override void OnPaint(PaintEventArgs e) {
+            Color background = Enabled ? Color.FromArgb(48, 49, 56) : Color.FromArgb(42, 43, 48);
+            Color foreground = Enabled ? Color.WhiteSmoke : Color.FromArgb(110, 110, 110);
+            e.Graphics.Clear(background);
+            string value = SelectedIndex >= 0 ? GetItemText(Items[SelectedIndex]) : string.Empty;
+            TextRenderer.DrawText(e.Graphics, value, Font, new Rectangle(6, 0, Width - 28, Height), foreground, TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+            using (Brush brush = new SolidBrush(Color.FromArgb(70, 70, 78))) e.Graphics.FillRectangle(brush, Width - 22, 0, 22, Height);
+            Point[] arrow = { new Point(Width - 15, Height / 2 - 2), new Point(Width - 7, Height / 2 - 2), new Point(Width - 11, Height / 2 + 3) };
+            using (Brush brush = new SolidBrush(foreground)) e.Graphics.FillPolygon(brush, arrow);
+        }
+    }
+
+    sealed class DarkNumericUpDown : NumericUpDown {
+        public DarkNumericUpDown() { SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true); }
+        protected override void OnPaint(PaintEventArgs e) {
+            Color background = Enabled ? Color.FromArgb(48, 49, 56) : Color.FromArgb(42, 43, 48);
+            Color foreground = Enabled ? Color.WhiteSmoke : Color.FromArgb(110, 110, 110);
+            e.Graphics.Clear(background);
+            TextRenderer.DrawText(e.Graphics, Text, Font, new Rectangle(4, 0, Width - 22, Height), foreground, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+            using (Brush brush = new SolidBrush(Color.FromArgb(70, 70, 78))) e.Graphics.FillRectangle(brush, Width - 20, 0, 20, Height);
+            using (Pen pen = new Pen(foreground, 1)) { e.Graphics.DrawLine(pen, Width - 14, Height / 2 - 3, Width - 10, Height / 2 - 3); e.Graphics.DrawLine(pen, Width - 14, Height / 2 + 3, Width - 10, Height / 2 + 3); }
+        }
+    }
+
+    sealed class DarkCheckBox : CheckBox {
+        public DarkCheckBox() { SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true); }
+        protected override void OnPaint(PaintEventArgs e) {
+            Color foreground = Enabled ? Color.WhiteSmoke : Color.FromArgb(110, 110, 110);
+            e.Graphics.Clear(Parent == null ? Color.FromArgb(32, 32, 32) : Parent.BackColor);
+            Rectangle box = new Rectangle(0, Math.Max(0, (Height - 14) / 2), 14, 14);
+            using (Brush fill = new SolidBrush(Checked ? Color.FromArgb(0, 120, 215) : Color.FromArgb(48, 49, 56))) e.Graphics.FillRectangle(fill, box);
+            using (Pen edge = new Pen(Color.FromArgb(100, 100, 105))) e.Graphics.DrawRectangle(edge, box);
+            if (Checked) using (Pen check = new Pen(Color.White, 2)) { e.Graphics.DrawLine(check, 3, box.Y + 7, 6, box.Y + 10); e.Graphics.DrawLine(check, 6, box.Y + 10, 11, box.Y + 4); }
+            TextRenderer.DrawText(e.Graphics, Text, Font, new Rectangle(20, 0, Width - 20, Height), foreground, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+        }
     }
 
     static class WindowChrome {
@@ -686,9 +731,9 @@ namespace LGMonitorControl {
                 panel.Controls.Add(box);
                 box.Controls.Add(new Label { Text = L.T("Profile ", "Perfil ") + (i + 1), AutoSize = true, Font = new Font("Segoe UI", 10.5f, FontStyle.Bold), ForeColor = Color.White, Location = new Point(10, 5) });
                 profileName[i] = new TextBox { Text = p.Name, Width = 105 };
-                profileEnabled[i] = new CheckBox { Text = L.T("Active", "Ativo"), Checked = ProfileStore.Enabled[i], AutoSize = true, Location = new Point(520, 17) };
+                profileEnabled[i] = new DarkCheckBox { Text = L.T("Active", "Ativo"), Checked = ProfileStore.Enabled[i], AutoSize = true, Location = new Point(520, 17) };
                 box.Controls.Add(profileEnabled[i]);
-                profileNightFilter[i] = new CheckBox { Text = L.T("Filter", "Filtro"), Checked = ProfileStore.NightFilterEnabled[i], AutoSize = true, Location = new Point(385, 77) };
+                profileNightFilter[i] = new DarkCheckBox { Text = L.T("Filter", "Filtro"), Checked = ProfileStore.NightFilterEnabled[i], AutoSize = true, Location = new Point(385, 77) };
                 profileNightKelvin[i] = NewCombo(new object[] { "4000 K", "3000 K", "2500 K", "2000 K", "1500 K" });
                 profileNightKelvin[i].Width = 72; profileNightKelvin[i].Location = new Point(445, 73);
                 int[] filterKelvins = { 4000, 3000, 2500, 2000, 1500 };
@@ -722,7 +767,7 @@ namespace LGMonitorControl {
             Button save = ButtonOf(L.T("Save and schedule", "Salvar e agendar"), 18, 485); save.Size = new Size(180, 36); save.BackColor = Color.FromArgb(0, 120, 215); save.ForeColor = Color.White;
             save.Click += delegate { SaveProfilesAndSchedule4(); };
             page.Controls.Add(save);
-            CheckBox allFilters = new CheckBox { Text = L.T("Filter all", "Filtro em todos"), AutoSize = true, Location = new Point(215, 494) };
+            CheckBox allFilters = new DarkCheckBox { Text = L.T("Filter all", "Filtro em todos"), AutoSize = true, Location = new Point(215, 494) };
             allFilters.CheckedChanged += delegate { for (int i = 0; i < profileNightFilter.Length; i++) profileNightFilter[i].Checked = allFilters.Checked; };
             page.Controls.Add(allFilters);
             page.Controls.Add(new Label { Text = L.T("Active = latest start time.", "Ativo = último horário iniciado."), AutoSize = true, ForeColor = Color.DimGray, Location = new Point(340, 495) });
@@ -813,7 +858,7 @@ namespace LGMonitorControl {
             return picker;
         }
 
-        NumericUpDown Number(int value) { return new NumericUpDown { Minimum = 0, Maximum = 100, Value = value, Width = 75 }; }
+        NumericUpDown Number(int value) { return new DarkNumericUpDown { Minimum = 0, Maximum = 100, Value = value, Width = 75 }; }
 
         ComboBox ProfileMode(int value) {
             ComboBox box = NewCombo(new object[] { "Personalizado", "Leitura", "Foto", "Cinema", "Daltonismo", "Jogo" }); box.Width = 165;
@@ -1135,7 +1180,7 @@ namespace LGMonitorControl {
         }
 
         ComboBox NewCombo(object[] values) {
-            ComboBox box = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, FlatStyle = FlatStyle.Popup, Width = 205, DrawMode = DrawMode.OwnerDrawFixed, BackColor = Color.FromArgb(48, 49, 56), ForeColor = Color.WhiteSmoke };
+            ComboBox box = new DarkComboBox { DropDownStyle = ComboBoxStyle.DropDownList, FlatStyle = FlatStyle.Popup, Width = 205, DrawMode = DrawMode.OwnerDrawFixed, BackColor = Color.FromArgb(48, 49, 56), ForeColor = Color.WhiteSmoke };
             box.DrawItem += delegate(object sender, DrawItemEventArgs e) {
                 if (e.Index < 0) return;
                 e.DrawBackground();
