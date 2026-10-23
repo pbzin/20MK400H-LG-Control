@@ -383,6 +383,8 @@ namespace LGMonitorControl {
             e.Graphics.Clear(Color.FromArgb(35, 36, 42));
         }
         protected override void OnHandleCreated(EventArgs e) { base.OnHandleCreated(e); NativeChildHider.HideScrollChildren(Handle); }
+        protected override void OnSelectedIndexChanged(EventArgs e) { base.OnSelectedIndexChanged(e); Invalidate(true); Update(); }
+        protected override void OnLayout(LayoutEventArgs e) { base.OnLayout(e); Invalidate(true); }
         protected override void OnPaint(PaintEventArgs e) {
             e.Graphics.Clear(Color.FromArgb(32, 32, 32));
             int width = ItemSize.Width;
