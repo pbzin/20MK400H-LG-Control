@@ -1132,7 +1132,7 @@ namespace LGMonitorControl {
                 Text = "• Duplo clique no ícone: reabre a janela\n• Clique direito: perfis rápidos e opção de saída\n• As tarefas Dia/Noite continuam funcionando mesmo se o aplicativo sair",
                 AutoSize = true, Location = new Point(35, 120)
             });
-            CheckBox startup = new CheckBox { Text = L.T("Start automatically with Windows", "Iniciar automaticamente com o Windows"), AutoSize = true, Location = new Point(25, 198), Checked = StartupManager.IsEnabled() };
+            CheckBox startup = new DarkCheckBox { Text = L.T("Start automatically with Windows", "Iniciar automaticamente com o Windows"), AutoSize = true, Location = new Point(25, 198), Checked = StartupManager.IsEnabled() };
             startup.CheckedChanged += delegate {
                 try {
                     StartupManager.SetEnabled(startup.Checked);
@@ -1157,8 +1157,8 @@ namespace LGMonitorControl {
 
             Button coffee = ButtonOf("Buy Me a Coffee", 75, 65); coffee.Size = new Size(210, 38);
             Button sponsor = ButtonOf("GitHub Sponsors", 315, 65); sponsor.Size = new Size(210, 38);
-            coffee.BackColor = Color.FromArgb(255, 221, 0);
-            sponsor.BackColor = Color.FromArgb(234, 74, 170); sponsor.ForeColor = Color.White;
+            coffee.BackColor = Color.FromArgb(55, 55, 55); coffee.ForeColor = Color.White;
+            sponsor.BackColor = Color.FromArgb(55, 55, 55); sponsor.ForeColor = Color.White;
             coffee.Click += delegate { OpenUrl("https://buymeacoffee.com/pbzin"); };
             sponsor.Click += delegate { OpenUrl("https://github.com/sponsors/pbzin"); };
             page.Controls.Add(coffee); page.Controls.Add(sponsor);
@@ -1226,8 +1226,8 @@ namespace LGMonitorControl {
             page.Controls.Add(new Label { Text = "Nível de preto HDMI", AutoSize = true, Location = new Point(20, 86) });
 
             page.Controls.Add(new Label { Text = "Comando bruto", Font = new Font(Font, FontStyle.Bold), AutoSize = true, Location = new Point(20, 150) });
-            NumericUpDown opcode = new NumericUpDown { Minimum = 0, Maximum = 255, Hexadecimal = true, Value = 0xFC, Location = new Point(220, 146), Width = 90 };
-            NumericUpDown value = new NumericUpDown { Minimum = 0, Maximum = 65535, Value = 0, Location = new Point(320, 146), Width = 90 };
+            DarkValueBox opcode = new DarkValueBox { Minimum = 0, Maximum = 255, Text = "252", Location = new Point(220, 146), Width = 90 };
+            DarkValueBox value = new DarkValueBox { Minimum = 0, Maximum = 65535, Text = "0", Location = new Point(320, 146), Width = 90 };
             Button raw = ButtonOf("Enviar", 430, 144);
             raw.Click += delegate { Apply((byte)opcode.Value, (uint)value.Value, "Bruto 0x" + ((byte)opcode.Value).ToString("X2") + " = " + value.Value); };
             page.Controls.Add(opcode); page.Controls.Add(value); page.Controls.Add(raw);
