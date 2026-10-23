@@ -401,6 +401,7 @@ namespace LGMonitorControl {
             ForeColor = Color.FromArgb(35, 35, 40);
             ProfileStore.Load();
             SyncEnabledFromScheduler();
+            SystemEvents.SessionSwitch += OnSessionSwitch;
             ClientSize = new Size(690, 680);
             MinimumSize = new Size(706, 688);
             StartPosition = FormStartPosition.CenterScreen;
@@ -573,7 +574,23 @@ namespace LGMonitorControl {
         }
 
         void ExitApplication() {
+            SystemEvents.SessionSwitch -= OnSessionSwitch;
             allowExit = true; trayIcon.Visible = false; trayIcon.Dispose(); Application.Exit();
+        }
+
+        void OnSessionSwitch(object sender, SessionSwitchEventArgs e) {
+            if (e.Reason != SessionSwitchReason.SessionLock && e.Reason != SessionSwitchReason.SessionUnlock) return;
+            try {
+                if (IsDisposed) return;
+                BeginInvoke((MethodInvoker)delegate {
+                    if (e.Reason == SessionSwitchReason.SessionLock) {
+                        NightFilter.Apply(false, 6500);
+                    } else {
+                        int index = ProfileStore.CurrentIndex();
+                        NightFilter.Apply(!ProfileStore.FilterPaused && ProfileStore.NightFilterEnabled[index], ProfileStore.NightFilterKelvin[index]);
+                    }
+                });
+            } catch { }
         }
 
         void BuildProfiles4(Control page) {
